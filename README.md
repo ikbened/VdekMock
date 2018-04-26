@@ -4,7 +4,7 @@ This is a small project to mock the Vdek API.
 
 It's build using SpringBoot 2.x and uses an embedded mongodb to store the data. It's build using maven.
 
-## Building and the application
+## Building and running the application
 
 Since it's just a default SpringBoot application you can build it by using the following command (in a terminal)
 
