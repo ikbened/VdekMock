@@ -14,6 +14,9 @@ The compiled executable jar can be found in `./target/vdemock.jar` And to run on
 
 > `$ mvn spring-boot:run` or `$ java -jar target/vdekmock.jar`
 
+After the application is started up, it exposes a simple REST api.
+The Swagger UI page can be found at http://localhost:8080/swagger-ui.html and the API definition can be found at http://localhost:8080/v2/api-docs
+
 ## Building the mock as a Docker image
 
  -- TODO --
