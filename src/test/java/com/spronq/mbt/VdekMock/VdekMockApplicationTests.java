@@ -1,11 +1,13 @@
 package com.spronq.mbt.VdekMock;
 
+import com.spronq.mbt.VdekMock.repository.ExtendedShipmentRepository;
 import io.restassured.RestAssured;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.junit.BeforeClass;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -15,12 +17,16 @@ import java.util.Date;
 import static io.restassured.RestAssured.given;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 public class VdekMockApplicationTests {
 
-    @BeforeClass
-    static public void initPath() {
-        RestAssured.baseURI = "http://localhost:8080/shipments";
+    @Autowired
+    ExtendedShipmentRepository shipmentRepository;
+
+    @Before
+    public void initPath() {
+        RestAssured.baseURI = "http://localhost";
+        RestAssured.port = 8080;
     }
 
 
@@ -71,10 +77,10 @@ public class VdekMockApplicationTests {
 				.contentType("application/json")
 				.body(extShipment.toString())
 				.when()
-				.get(RestAssured.baseURI)
+				.post("/shipments")
 				.then()
 				.assertThat()
-				.statusCode(200);
+				.statusCode(202);
 	}
 
 
@@ -84,10 +90,10 @@ public class VdekMockApplicationTests {
         given()
                 .pathParam("ShipmentId", 1)
                 .when()
-                .get(RestAssured.baseURI + "/{ShipmentId}")
+                .get("shipments/{ShipmentId}")
                 .then()
                 .assertThat()
-                .statusCode(200);
+                .statusCode(404);
     }
 
 
