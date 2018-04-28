@@ -20,7 +20,7 @@ public class VdekMockApplicationTests {
 
     @BeforeClass
     static public void initPath() {
-        RestAssured.baseURI = "http://localhost:8080";
+        RestAssured.baseURI = "http://localhost:8080/shipments";
     }
 
 
@@ -29,7 +29,7 @@ public class VdekMockApplicationTests {
     }
 
     @Test
-    public void BasicTest() {
+    public void PostSimpleShipment() {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyymmddhhmmss");
         String d = sdf.format(new Date());
 
@@ -71,10 +71,24 @@ public class VdekMockApplicationTests {
 				.contentType("application/json")
 				.body(extShipment.toString())
 				.when()
-				.get(RestAssured.baseURI + "/shipments/")
+				.get(RestAssured.baseURI)
 				.then()
 				.assertThat()
 				.statusCode(200);
 	}
+
+
+    @Test
+    public void GetUnknownShipmentById() {
+
+        given()
+                .pathParam("ShipmentId", 1)
+                .when()
+                .get(RestAssured.baseURI + "/{ShipmentId}")
+                .then()
+                .assertThat()
+                .statusCode(200);
+    }
+
 
 }
