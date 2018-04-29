@@ -38,6 +38,16 @@ public class VdekApi {
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(value = HttpStatus.ACCEPTED)
     public Mono<ExtendedShipment> createShipments(@Valid @RequestBody ExtendedShipment shipment) {
+
+        if (shipment.getCustomerNumber().equals(""))
+        {
+            shipment.setErrorMessage("ERROR - customer number is missing");
+            shipment.setProcessedByTask(0);
+        }
+        else {
+            shipment.setProcessedByTask(1);
+        }
+
         return repository.save(shipment);
     }
 

@@ -52,4 +52,79 @@ public class ExtendedShipment {
     private LocalDate birthDate;
     private String gender;
     private String ledgerTag;
+    private String ErrorMessage;
+    private Integer ProcessedByTask;
+
+    public ExtendedShipment() {
+        this.shipmentId = new java.util.UUID().randomUUID();
+    }
+
+    public String getErrorMessage() {
+        return ErrorMessage;
+    }
+
+    public Integer getProcessedByTask() {
+        return ProcessedByTask;
+    }
+
+    public void setErrorMessage(String errorMessage) {
+        ErrorMessage = errorMessage;
+    }
+
+    public void setProcessedByTask(Integer processedByTask) {
+        ProcessedByTask = processedByTask;
+    }
+
+    public String getShipmentId() {
+        return shipmentId;
+    }
+
+    public String getCustomerNumber() {
+        return customerNumber;
+    }
+
+    public String getEan() {
+        return ean;
+    }
+
+    public String getEmailAddress() {
+        return emailAddress;
+    }
+
+    public String getEmailUser() {
+        return emailUser;
+    }
+
+    public String getOrderId() {
+        return orderId;
+    }
+
+    public String getSchoolId() {
+        return schoolId;
+    }
+
+    public String getPostalCode() {
+        return postalCode;
+    }
+
+    public String getLabel() {
+        return label;
+    }
+
+    public String getFirstName() {
+        return firstName;
+    }
+
+    public String getMiddleName() {
+        return middleName;
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+
+    public String getAdministration() {
+        return administration;
+    }
+
 }
