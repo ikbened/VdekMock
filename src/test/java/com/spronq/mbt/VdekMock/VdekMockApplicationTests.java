@@ -99,11 +99,12 @@ public class VdekMockApplicationTests {
                         .when()
                         .post("/shipments")
                         .then()
-                        .contentType(ContentType.JSON)  // check that the content type return from the API is JSON
+                        .contentType(ContentType.JSON)
                         .assertThat()
                         .statusCode(202)
                         .and()
-                        .extract().response(); // extract the response
+                        .extract()
+                        .response();
 
         JsonPath jsonPathEvaluator = response.jsonPath();
         String shipmentId = jsonPathEvaluator.get("$.ShipmentId");
