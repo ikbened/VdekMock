@@ -52,8 +52,6 @@ public class ExtendedShipment {
     private LocalDate birthDate;
     private String gender;
     private String ledgerTag;
-    private String ErrorMessage;
-    private Integer ProcessedByTask;
 
     public ExtendedShipment() {
         this.shipmentId = new java.util.UUID().randomUUID();
