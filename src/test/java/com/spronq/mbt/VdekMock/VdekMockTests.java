@@ -1,5 +1,6 @@
 package com.spronq.mbt.VdekMock;
 
+import com.spronq.mbt.VdekMock.model.User;
 import com.spronq.mbt.VdekMock.repository.ExtendedShipmentRepository;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
@@ -13,15 +14,16 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import static org.hamcrest.Matchers.*;
+
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import static io.restassured.RestAssured.given;
+import static org.hamcrest.Matchers.equalTo;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
-public class VdekMockApplicationTests {
+public class VdekMockTests {
 
     @Autowired
     ExtendedShipmentRepository shipmentRepository;
@@ -74,25 +76,9 @@ public class VdekMockApplicationTests {
 
     }
 
-    @Test
-    public void PostSimpleShipment() {
-
-        given()
-				.contentType("application/json")
-				.body(extShipment.toString())
-				.when()
-				.post("/shipments")
-				.then()
-				.assertThat()
-				.statusCode(202)
-                .log().body();
-	}
 
     @Test
-    public void ShipmentWithoutCustomerNumber() {
-        extShipment.remove("customerNumber");
-        //What about CustomerNumber = "" and CustomerNumber = "NULL"??
-
+    public void CustomerNumberIsMissing() {
         Response response =
                 given()
                         .contentType("application/json")
@@ -122,17 +108,54 @@ public class VdekMockApplicationTests {
                 .body("errorMessage", equalTo("ERROR - customer number is missing"));
     }
 
+
     @Test
-    public void GetUnknownShipmentById() {
+    public void CustomerNumberNotUnique() {
+        User user = new User();
+        user.setEmail("aap@mailinator.com");
+        user.setLabel("LearnId");
+        user.setCustomerNumber("1718");
 
         given()
-                .pathParam("ShipmentId", "aap")
+                .log().everything()
+                .contentType("application/json")
+                .body(user)
                 .when()
-                .get("/shipments/{ShipmentId}")
+                .post("/users")
                 .then()
-                .assertThat()
-                .statusCode(404);
-    }
+                .statusCode(202);
 
+        user.setEmail("noot@mailinator.com");
+
+        given()
+                .log().everything()
+                .contentType("application/json")
+                .body(user)
+                .when()
+                .post("/users")
+                .then()
+                .statusCode(202);
+
+        String shipmentId = given()
+                .log().everything()
+                .contentType("application/json")
+                .body(extShipment.toString())
+                .when()
+                .post("/shipments")
+                .then()
+                .contentType(ContentType.JSON)
+                .statusCode(202)
+                .extract().jsonPath().getString("shipmentId");
+
+       given()
+               .pathParam("ShipmentId", shipmentId)
+               .when()
+               .get("/shipments/{ShipmentId}")
+               .then()
+               .log().body()
+               .assertThat()
+               .statusCode(200)
+               .body("errorMessage", equalTo("ERROR - customer number is missing"));
+    }
 
 }
