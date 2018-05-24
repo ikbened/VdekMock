@@ -11,6 +11,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import javax.validation.Valid;
+import java.util.Optional;
 
 @RestController
 @RequestMapping(value = "/shipments", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -39,13 +40,13 @@ public class VdekApi {
     @ResponseStatus(value = HttpStatus.ACCEPTED)
     public Mono<ExtendedShipment> createShipments(@Valid @RequestBody ExtendedShipment shipment) {
 
-        if (shipment.getCustomerNumber().equals(""))
+        if (!Optional.ofNullable(shipment.getCustomerNumber()).isPresent())
         {
             shipment.setErrorMessage("ERROR - customer number is missing");
-            shipment.setProcessedByTask(0);
+            shipment.setProcessedByTask(false);
         }
         else {
-            shipment.setProcessedByTask(1);
+            shipment.setProcessedByTask(true);
         }
 
         return repository.save(shipment);

@@ -42,31 +42,31 @@ public class VdekMockApplicationTests {
         try {
             extShipment = new JSONObject();
             extShipment
-                    .put("Customernumber", "1718")
-                    .put("EAN", "9789034506801")
-                    .put("OrderId", "1718_" + d)
-                    .put("OrderLine", "1")
-                    .put("SchoolId", "1641")
-                    .put("SessionId", "")
-                    .put("EmailAddress", "cust" + d + "@mailinator.com")
-                    .put("Label", "VDE")
-                    .put("PostalCode", "2323ab")
-                    .put("FirstName", "Bokito")
-                    .put("MiddleName", "de")
-                    .put("LastName", "Aap")
-                    .put("GroupName", "")
-                    .put("Administration", "Dynamics")
-                    .put("Address", "SomeStreet")
-                    .put("AddressNumber", "1")
-                    .put("AddressAdjunct", "")
-                    .put("City", "SomeCity")
-                    .put("Country", "SomeCountry")
-                    .put("Gender", "M")
-                    .put("BirthDate", "2004-02-01")
-                    .put("Amount", "1")
-                    .put("StartDate", "2018-04-27")
-                    .put("DisplayName", "SomeDisplayName")
-                    .put("EmailUser", "user" + d + "@mailinator.com");
+                    .put("customerNumber", "1718")
+                    .put("ean", "9789034506801")
+                    .put("orderId", "1718_" + d)
+                    .put("orderLine", "1")
+                    .put("schoolId", "1641")
+                    .put("sessionId", "")
+                    .put("emailAddress", "cust" + d + "@mailinator.com")
+                    .put("label", "VDE")
+                    .put("postalCode", "2323ab")
+                    .put("firstName", "Bokito")
+                    .put("middleName", "de")
+                    .put("lastName", "Aap")
+                    .put("groupName", "")
+                    .put("administration", "Dynamics")
+                    .put("address", "SomeStreet")
+                    .put("addressNumber", "1")
+                    .put("addressAdjunct", "")
+                    .put("city", "SomeCity")
+                    .put("country", "SomeCountry")
+                    .put("gender", "M")
+                    .put("birthDate", "2004-02-01")
+                    .put("amount", "1")
+                    .put("startDate", "2018-04-27")
+                    .put("displayName", "SomeDisplayName")
+                    .put("emailUser", "user" + d + "@mailinator.com");
 
         } catch (JSONException e) {
             //some exception handler code.
@@ -84,12 +84,13 @@ public class VdekMockApplicationTests {
 				.post("/shipments")
 				.then()
 				.assertThat()
-				.statusCode(202);
+				.statusCode(202)
+                .log().body();
 	}
 
     @Test
     public void ShipmentWithoutCustomerNumber() {
-        extShipment.remove("Customernumber");
+        extShipment.remove("customerNumber");
         //What about CustomerNumber = "" and CustomerNumber = "NULL"??
 
         Response response =
@@ -100,6 +101,7 @@ public class VdekMockApplicationTests {
                         .post("/shipments")
                         .then()
                         .contentType(ContentType.JSON)
+                        .log().body()
                         .assertThat()
                         .statusCode(202)
                         .and()
@@ -107,25 +109,26 @@ public class VdekMockApplicationTests {
                         .response();
 
         JsonPath jsonPathEvaluator = response.jsonPath();
-        String shipmentId = jsonPathEvaluator.get("$.ShipmentId");
+        String shipmentId = jsonPathEvaluator.getString("shipmentId");
 
         given()
                 .pathParam("ShipmentId", shipmentId)
                 .when()
-                .get("shipments/{ShipmentId}")
+                .get("/shipments/{ShipmentId}")
                 .then()
+                .log().body()
                 .assertThat()
-                .statusCode(202)
-                .body("ErrorCode", equalTo("ERROR - Missing customer number"));
+                .statusCode(200)
+                .body("errorMessage", equalTo("ERROR - customer number is missing"));
     }
 
     @Test
     public void GetUnknownShipmentById() {
 
         given()
-                .pathParam("ShipmentId", 1)
+                .pathParam("ShipmentId", "aap")
                 .when()
-                .get("shipments/{ShipmentId}")
+                .get("/shipments/{ShipmentId}")
                 .then()
                 .assertThat()
                 .statusCode(404);
