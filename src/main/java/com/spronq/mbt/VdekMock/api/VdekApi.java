@@ -1,8 +1,10 @@
 package com.spronq.mbt.VdekMock.api;
 
 import com.spronq.mbt.VdekMock.model.ExtendedShipment;
+import com.spronq.mbt.VdekMock.model.User;
 import com.spronq.mbt.VdekMock.repository.ExtendedShipmentRepository;
 import com.spronq.mbt.VdekMock.repository.UsersRepository;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -43,22 +45,74 @@ public class VdekApi {
     @ResponseStatus(value = HttpStatus.ACCEPTED)
     public Mono<ExtendedShipment> createShipments(@Valid @RequestBody ExtendedShipment shipment) {
 
-        if (!Optional.ofNullable(shipment.getCustomerNumber()).isPresent())
-        {
+        String errMsg = resolveCustomer(shipment);
+        if (StringUtils.isEmpty(errMsg))
+            errMsg = resolveUser(shipment);
+
+        if (StringUtils.isEmpty(errMsg)) {
+            shipment.setProcessedByTask(true);
+        } else {
             shipment.setErrorMessage("ERROR - customer number is missing");
             shipment.setProcessedByTask(false);
-        }
-        else if(userRepository.findAllByCustomerNumber(shipment.getCustomerNumber()).count().block() > 1)
-        {
-            shipment.setErrorMessage("ERROR - customer number is not unique");
-            shipment.setProcessedByTask(false);
-        }
-        else {
-            shipment.setProcessedByTask(true);
         }
 
         return repository.save(shipment);
     }
 
+    private String resolveCustomer(ExtendedShipment shipment) {
 
+        String errMsg = IsCustomerNumberNullOrEmpty(shipment.getCustomerNumber());
+        String email = "";
+
+        if (StringUtils.isEmpty(errMsg)) {
+            if (StringUtils.isEmpty(shipment.getEmailAddress())) {
+                email = shipment.getCustomerNumber();
+            } else {
+                email = shipment.getEmailAddress();
+            }
+        }
+
+        if (StringUtils.isEmpty(errMsg)) {
+            errMsg = IsEmailUniqueForLearnIdAccount(email);
+        }
+
+
+        return errMsg;
+    }
+
+    private String IsEmailUniqueForLearnIdAccount(String email) {
+        String errMsg;
+        Integer i = 0;
+
+        for (User user : userRepository.findAllByEmail(email)) {
+            if (user.getLabel().equals("LearnId"))
+                i++;
+        }
+
+        if (i>1)
+            errMsg = "Email is not unique.";
+        else
+            errMsg = "";
+
+        return errMsg;
+    }
+
+    private String IsCustomerNumberNullOrEmpty(String customerNumber) {
+        String errMsg;
+
+        if (!Optional.ofNullable(customerNumber()).isPresent()) {
+            errMsg = "Customer number is missing.";
+        } else if(userRepository.findAllByCustomerNumber(customerNumber).count().block() > 1) {
+            errMsg = "Customer number is not unique.";
+        } else {
+            errMsg = "";
+        }
+
+        return errMsg;
+    }
+
+
+    private String resolveUser(ExtendedShipment shipment) {
+
+    }
 }
