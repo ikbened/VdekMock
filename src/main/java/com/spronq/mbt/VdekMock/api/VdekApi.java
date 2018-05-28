@@ -2,7 +2,7 @@ package com.spronq.mbt.VdekMock.api;
 
 import com.spronq.mbt.VdekMock.model.ExtendedShipment;
 import com.spronq.mbt.VdekMock.repository.ExtendedShipmentRepository;
-import com.spronq.mbt.VdekMock.repository.UserRepository;
+import com.spronq.mbt.VdekMock.repository.UsersRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -19,10 +19,10 @@ import java.util.Optional;
 public class VdekApi {
 
     private ExtendedShipmentRepository repository;
-    private UserRepository userRepository;
+    private UsersRepository userRepository;
 
     @Autowired
-    public VdekApi(ExtendedShipmentRepository repository, UserRepository userRepository) {
+    public VdekApi(ExtendedShipmentRepository repository, UsersRepository userRepository) {
         this.repository = repository;
         this.userRepository = userRepository;
     }
@@ -48,7 +48,7 @@ public class VdekApi {
             shipment.setErrorMessage("ERROR - customer number is missing");
             shipment.setProcessedByTask(false);
         }
-        else if(userRepository.findAllByCustomerNumber(shipment.getCustomerNumber()).count() > 1)
+        else if(userRepository.findAllByCustomerNumber(shipment.getCustomerNumber()).count().block() > 1)
         {
             shipment.setErrorMessage("ERROR - customer number is not unique");
             shipment.setProcessedByTask(false);

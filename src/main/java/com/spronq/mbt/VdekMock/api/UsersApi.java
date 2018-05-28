@@ -1,9 +1,7 @@
 package com.spronq.mbt.VdekMock.api;
 
-import com.spronq.mbt.VdekMock.model.ExtendedShipment;
 import com.spronq.mbt.VdekMock.model.User;
-import com.spronq.mbt.VdekMock.repository.ExtendedShipmentRepository;
-import com.spronq.mbt.VdekMock.repository.UserRepository;
+import com.spronq.mbt.VdekMock.repository.UsersRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -13,16 +11,15 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import javax.validation.Valid;
-import java.util.Optional;
 
 @RestController
 @RequestMapping(value = "/users", produces = MediaType.APPLICATION_JSON_VALUE)
-public class UserApi {
+public class UsersApi {
 
-    private UserRepository repository;
+    private UsersRepository repository;
 
     @Autowired
-    public UserApi(UserRepository repository) {
+    public UsersApi(UsersRepository repository) {
         this.repository = repository;
     }
 
@@ -33,12 +30,12 @@ public class UserApi {
                 .defaultIfEmpty(ResponseEntity.notFound().build());
     }
 
-    @GetMapping
+    @GetMapping(params = "email")
     public Flux<User> getUsersByEmail(@RequestParam(value = "email") String email) {
         return repository.findAllByEmail(email);
     }
 
-    @GetMapping
+    @GetMapping(params = "customerNumber")
     public Flux<User> getUsersByCustomerNumber(@RequestParam(value = "customerNumber") String customerNumber) {
         return repository.findAllByCustomerNumber(customerNumber);
     }
