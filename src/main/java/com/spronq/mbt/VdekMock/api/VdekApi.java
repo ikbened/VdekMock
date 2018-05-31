@@ -60,7 +60,7 @@ public class VdekApi {
 
     private String resolveCustomer(ExtendedShipment shipment) {
 
-        String errMsg = IsCustomerNumberNull(shipment.getCustomerNumber());
+        String errMsg = IsCustomerNumberUnique(shipment.getCustomerNumber());
         String email = "";
 
         if (StringUtils.isEmpty(errMsg)) {
@@ -93,10 +93,12 @@ public class VdekApi {
         }
     }
 
-    private String IsCustomerNumberNull(String customerNumber) {
+    private String IsCustomerNumberUnique(String customerNumber) {
 
-        if (!Optional.ofNullable(customerNumber).isPresent()) {
-            return "Customer number is missing.";
+        long numberOfUsersWithSameCustomerNumber = userRepository.findAllByCustomerNumber(customerNumber).toStream().count();
+
+        if (numberOfUsersWithSameCustomerNumber > 1) {
+            return "Customer number is not unique";
         } else {
             return "";
         }
