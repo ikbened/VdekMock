@@ -6,6 +6,7 @@ import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
+import org.apache.commons.lang3.StringUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Before;
@@ -110,7 +111,7 @@ public class VdekMockTests {
 
 
     @Test
-    public void CustomerNumberUnique() {
+    public void CustomerNumberisNotUnique() {
         String customerNumber = "1718";
         User user = new User();
         user.setEmail("aap@mailinator.com");
@@ -170,7 +171,7 @@ public class VdekMockTests {
     }
 
     @Test
-    public void CustomerEmailUniqueForLearnIdAccounts() {
+    public void CustomerEmailIsNotUnique() {
         String email = "aap@mailinator.com";
         User user = new User();
         user.setEmail(email);
@@ -217,6 +218,46 @@ public class VdekMockTests {
                 .assertThat()
                 .statusCode(202)
                 .body("errorMessage", equalTo("Email is not unique."));
+
+    }
+
+    @Test
+    public void NewCustomerNewUser() {
+        String custEmail = "";
+        String userEmail = "";
+        String custNumber = "";
+
+        try {
+            custEmail = extShipment.get("emailAddress").toString();
+            userEmail = extShipment.get("emailUser").toString();
+            custNumber = extShipment.get("customerNumber").toString();
+        } catch (JSONException e) {
+            //some exception handler code.
+        }
+
+        given()
+                .log().everything()
+                .contentType("application/json")
+                .body(extShipment.toString())
+                .when()
+                .post("/shipments")
+                .then()
+                .assertThat()
+                .statusCode(202)
+                .body("errorMessage", equalTo(null))
+                .body("processedByTask", equalTo(true));
+
+        given()
+                .log().all()
+                .queryParam("email", custEmail)
+                .when()
+                .get("/users")
+                .then()
+                .statusCode(200)
+                .body("emailAddress", equalTo(custEmail))
+                .body("customerNumber", equalTo(custNumber))
+                .body("label", equalTo("LearnId"))
+                .body("accountSetId", equalTo(null));
 
     }
 

@@ -11,6 +11,7 @@ public interface UsersRepository extends ReactiveMongoRepository<User, String> {
 
     Flux<User> findAllByEmail(String email);
     Flux<User> findAllByCustomerNumber(String customerNumber);
+    Flux<User> findAllByAccountSetId(String accountSetId);
     Mono<Long> countAllByCustomerNumber(String customerNumber);
 
 }

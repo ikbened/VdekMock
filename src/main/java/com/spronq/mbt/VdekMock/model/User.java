@@ -23,6 +23,7 @@ public class User {
     private String label;
     private String email;
     private String customerNumber;
+    private String accountSetId;
 
     public User() {
         this.id = java.util.UUID.randomUUID().toString();

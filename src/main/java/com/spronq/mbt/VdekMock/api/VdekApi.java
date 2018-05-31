@@ -1,6 +1,7 @@
 package com.spronq.mbt.VdekMock.api;
 
 import com.spronq.mbt.VdekMock.model.ExtendedShipment;
+import com.spronq.mbt.VdekMock.model.User;
 import com.spronq.mbt.VdekMock.repository.ExtendedShipmentRepository;
 import com.spronq.mbt.VdekMock.repository.UsersRepository;
 import org.apache.commons.lang3.StringUtils;
@@ -49,7 +50,14 @@ public class VdekApi {
             errMsg = resolveUser(shipment);
 
         if (StringUtils.isEmpty(errMsg)) {
+            User customer = new User();
+            customer.setEmail(shipment.getEmailAddress());
+            customer.setCustomerNumber(shipment.getCustomerNumber());
+            customer.setLabel("LearnId");
+
+            userRepository.save(customer);
             shipment.setProcessedByTask(true);
+
         } else {
             shipment.setErrorMessage(errMsg);
             shipment.setProcessedByTask(false);
