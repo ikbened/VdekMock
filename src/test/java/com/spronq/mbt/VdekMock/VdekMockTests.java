@@ -110,7 +110,7 @@ public class VdekMockTests {
 
 
     @Test
-    public void CustomerNumberNotUnique() {
+    public void CustomerNumberUnique() {
         String customerNumber = "1718";
         User user = new User();
         user.setEmail("aap@mailinator.com");
@@ -167,6 +167,57 @@ public class VdekMockTests {
                .assertThat()
                .statusCode(200)
                .body("errorMessage", equalTo("Customer number is not unique"));
+    }
+
+    @Test
+    public void CustomerEmailUniqueForLearnIdAccounts() {
+        String email = "aap@mailinator.com";
+        User user = new User();
+        user.setEmail(email);
+        user.setLabel("LearnId");
+        user.setCustomerNumber("1718");
+
+        given()
+                .log().everything()
+                .contentType("application/json")
+                .body(user)
+                .when()
+                .post("/users")
+                .then()
+                .statusCode(202);
+
+        user = new User();
+        user.setEmail(email);
+        user.setLabel("LearnId");
+        user.setCustomerNumber("1719");
+
+        given()
+                .log().everything()
+                .contentType("application/json")
+                .body(user)
+                .when()
+                .post("/users")
+                .then()
+                .statusCode(202);
+
+        try {
+            extShipment.remove("emailAddress");
+            extShipment.put("emailAddress", email);
+        } catch (JSONException e) {
+            //some exception handler code.
+        }
+
+        given()
+                .log().everything()
+                .contentType("application/json")
+                .body(extShipment.toString())
+                .when()
+                .post("/shipments")
+                .then()
+                .assertThat()
+                .statusCode(202)
+                .body("errorMessage", equalTo("Email is not unique."));
+
     }
 
 }
