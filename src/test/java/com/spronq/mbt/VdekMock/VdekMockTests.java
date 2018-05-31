@@ -245,7 +245,8 @@ public class VdekMockTests {
                 .assertThat()
                 .statusCode(202)
                 .body("errorMessage", equalTo(null))
-                .body("processedByTask", equalTo(true));
+                .body("processedByTask", equalTo(true))
+                .log().body();
 
         given()
                 .log().all()
@@ -254,6 +255,7 @@ public class VdekMockTests {
                 .get("/users")
                 .then()
                 .statusCode(200)
+                .log().body()
                 .body("emailAddress", equalTo(custEmail))
                 .body("customerNumber", equalTo(custNumber))
                 .body("label", equalTo("LearnId"))
