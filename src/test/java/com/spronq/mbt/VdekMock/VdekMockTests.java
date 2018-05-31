@@ -111,10 +111,11 @@ public class VdekMockTests {
 
     @Test
     public void CustomerNumberNotUnique() {
+        String customerNumber = "1718";
         User user = new User();
         user.setEmail("aap@mailinator.com");
         user.setLabel("LearnId");
-        user.setCustomerNumber("1718");
+        user.setCustomerNumber(customerNumber);
 
         given()
                 .log().everything()
@@ -135,6 +136,13 @@ public class VdekMockTests {
                 .post("/users")
                 .then()
                 .statusCode(202);
+
+        try {
+            extShipment.remove("customerNumber");
+            extShipment.put("customerNumber", customerNumber);
+        } catch (JSONException e) {
+            //some exception handler code.
+        }
 
         String shipmentId = given()
                 .log().everything()
