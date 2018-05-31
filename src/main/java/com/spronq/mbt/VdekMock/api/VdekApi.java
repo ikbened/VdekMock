@@ -1,7 +1,6 @@
 package com.spronq.mbt.VdekMock.api;
 
 import com.spronq.mbt.VdekMock.model.ExtendedShipment;
-import com.spronq.mbt.VdekMock.model.User;
 import com.spronq.mbt.VdekMock.repository.ExtendedShipmentRepository;
 import com.spronq.mbt.VdekMock.repository.UsersRepository;
 import org.apache.commons.lang3.StringUtils;
@@ -81,38 +80,34 @@ public class VdekApi {
     }
 
     private String IsEmailUniqueForLearnIdAccount(String email) {
-        String errMsg;
-        Integer i = 0;
 
-        for (User user : userRepository.findAllByEmail(email)) {
-            if (user.getLabel().equals("LearnId"))
-                i++;
+        long numberOfUsersWithSameEmail = userRepository.findAllByEmail(email).toStream().filter(u -> u.getLabel().equalsIgnoreCase("LearnId")).count();
+
+        // Directly filter and count flux, and not converting it to a stream.
+        // long count = userRepository.findAllByEmail(email).filter(user -> user.getLabel().equalsIgnoreCase("LearnId")).count().block();
+
+        if (numberOfUsersWithSameEmail > 1) {
+            return "Email is not unique.";
+        } else {
+            return  "";
         }
-
-        if (i>1)
-            errMsg = "Email is not unique.";
-        else
-            errMsg = "";
-
-        return errMsg;
     }
 
     private String IsCustomerNumberNullOrEmpty(String customerNumber) {
-        String errMsg;
 
-        if (!Optional.ofNullable(customerNumber()).isPresent()) {
-            errMsg = "Customer number is missing.";
-        } else if(userRepository.findAllByCustomerNumber(customerNumber).count().block() > 1) {
-            errMsg = "Customer number is not unique.";
+        if (!Optional.ofNullable(customerNumber).isPresent()) {
+            return "Customer number is missing.";
+        } else if (userRepository.findAllByCustomerNumber(customerNumber).toStream().count() > 1) {
+            return "Customer number is not unique.";
         } else {
-            errMsg = "";
+            return "";
         }
-
-        return errMsg;
     }
 
 
     private String resolveUser(ExtendedShipment shipment) {
+
+        return "";
 
     }
 }
