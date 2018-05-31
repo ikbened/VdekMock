@@ -126,7 +126,10 @@ public class VdekMockTests {
                 .then()
                 .statusCode(202);
 
+        user = new User();
         user.setEmail("noot@mailinator.com");
+        user.setLabel("LearnId");
+        user.setCustomerNumber(customerNumber);
 
         given()
                 .log().everything()
@@ -163,7 +166,7 @@ public class VdekMockTests {
                .log().body()
                .assertThat()
                .statusCode(200)
-               .body("errorMessage", equalTo("ERROR - customer number is missing"));
+               .body("errorMessage", equalTo("ERROR - customer number is not unique"));
     }
 
 }
