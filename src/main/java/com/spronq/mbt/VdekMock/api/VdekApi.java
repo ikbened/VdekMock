@@ -51,7 +51,7 @@ public class VdekApi {
         if (StringUtils.isEmpty(errMsg)) {
             shipment.setProcessedByTask(true);
         } else {
-            shipment.setErrorMessage("ERROR - customer number is missing");
+            shipment.setErrorMessage(errMsg);
             shipment.setProcessedByTask(false);
         }
 

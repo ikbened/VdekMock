@@ -166,7 +166,7 @@ public class VdekMockTests {
                .log().body()
                .assertThat()
                .statusCode(200)
-               .body("errorMessage", equalTo("ERROR - customer number is not unique"));
+               .body("errorMessage", equalTo("Customer number is not unique"));
     }
 
 }
