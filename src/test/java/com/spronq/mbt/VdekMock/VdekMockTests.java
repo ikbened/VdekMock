@@ -217,7 +217,6 @@ public class VdekMockTests {
                 .assertThat()
                 .statusCode(202)
                 .body("errorMessage", equalTo("Email is not unique."));
-
     }
 
     @Test
@@ -257,6 +256,19 @@ public class VdekMockTests {
                 .log().body()
                 .body("[0].email", equalTo(custEmail))
                 .body("[0].customerNumber", equalTo(custNumber))
+                .body("[0].label", equalTo("LearnId"))
+                .body("[0].accountSetId", equalTo(null));
+
+        given()
+                .log().all()
+                .queryParam("email", userEmail)
+                .when()
+                .get("/users")
+                .then()
+                .statusCode(200)
+                .log().body()
+                .body("[0].email", equalTo(userEmail))
+                .body("[0].customerNumber", equalTo(null))
                 .body("[0].label", equalTo("LearnId"))
                 .body("[0].accountSetId", equalTo(null));
 

@@ -4,6 +4,7 @@ import com.spronq.mbt.VdekMock.model.ExtendedShipment;
 import com.spronq.mbt.VdekMock.model.User;
 import com.spronq.mbt.VdekMock.repository.ExtendedShipmentRepository;
 import com.spronq.mbt.VdekMock.repository.UsersRepository;
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -49,14 +50,7 @@ public class VdekApi {
             errMsg = resolveUser(shipment);
 
         if (StringUtils.isEmpty(errMsg)) {
-            User customer = new User();
-            customer.setEmail(shipment.getEmailAddress());
-            customer.setCustomerNumber(shipment.getCustomerNumber());
-            customer.setLabel("LearnId");
-
-            userRepository.save(customer).block();
             shipment.setProcessedByTask(true);
-
         } else {
             shipment.setErrorMessage(errMsg);
             shipment.setProcessedByTask(false);
@@ -66,49 +60,79 @@ public class VdekApi {
     }
 
     private String resolveCustomer(ExtendedShipment shipment) {
-
-        String errMsg = IsCustomerNumberUnique(shipment.getCustomerNumber());
+        String errMsg = "";
         String email = "";
+        User customer;
+        String custNumber = shipment.getCustomerNumber();
+
+        if ( !IsCustomerNumberUnique(shipment.getCustomerNumber()) ) {
+            errMsg = "CustomerNumber is not unique."
+        }
 
         if (StringUtils.isEmpty(errMsg)) {
             if (StringUtils.isEmpty(shipment.getEmailAddress())) {
-                email = shipment.getCustomerNumber();
+                email = shipment.getCustomerNumber() + "@thelearningnetwork.nl";
             } else {
                 email = shipment.getEmailAddress();
             }
         }
 
         if (StringUtils.isEmpty(errMsg)) {
-            errMsg = IsEmailUniqueForLearnIdAccount(email);
+            if ( !IsEmailUniqueForLearnIdAccounts(email) ) {
+                errMsg = "Customer email is not unique within LearnId";
+            }
         }
 
+        if (StringUtils.isEmpty(errMsg)) {
+            if ( IsLearnIdAccountWithEmailPresent(email) ) {
+                customer = userRepository.findAllByEmail(email);
+            } else {
+                customer = new User();
+                customer.setEmail(shipment.getEmailAddress());
+                customer.setCustomerNumber(shipment.getCustomerNumber());
+                customer.setLabel("LearnId");
+
+                userRepository.save(customer).block();
+            }
+
+            User user0 = userRepository.findAllByCustomerNumber(custNumber).map()
+
+            if (user0 != null) {
+
+                if (String.isEmpty(user0.getAccountSetId())) {
+                    user0.setAccountSetId(java.util.UUID.randomUUID());
+                    userRepository.save(user0).block();
+                }
+                customer.setCustomerNumber(user0.getAccountSetId());
+            } else {
+                customer.setCustomerNumber(custNumber);
+            }
+
+            customer.setPostalCode(shipment.getPostalCode());
+            userRepository.save(customer).block();
+         }
 
         return errMsg;
     }
 
-    private String IsEmailUniqueForLearnIdAccount(String email) {
 
-        long numberOfUsersWithSameEmail = userRepository.findAllByEmail(email).toStream().filter(u -> u.getLabel().equalsIgnoreCase("LearnId")).count();
+    private Boolean IsLearnIdAccountWithEmailPresent(String email) {
+        return CountLearnIdAccountsByEmail(email) = 1;
+    }
+
+    private Boolean IsEmailUniqueForLearnIdAccounts(String email) {
+        return CountLearnIdAccountsByEmail(email) <= 1;
+    }
+
+    private Long CountLearnIdAccountsByEmail(String email) {
+        return userRepository.findAllByEmail(email).toStream().filter(u -> u.getLabel().equalsIgnoreCase("LearnId")).count();
 
         // Directly filter and count flux, and not converting it to a stream.
         // long count = userRepository.findAllByEmail(email).filter(user -> user.getLabel().equalsIgnoreCase("LearnId")).count().block();
-
-        if (numberOfUsersWithSameEmail > 1) {
-            return "Email is not unique.";
-        } else {
-            return  "";
-        }
     }
 
-    private String IsCustomerNumberUnique(String customerNumber) {
-
-        long numberOfUsersWithSameCustomerNumber = userRepository.findAllByCustomerNumber(customerNumber).toStream().count();
-
-        if (numberOfUsersWithSameCustomerNumber > 1) {
-            return "Customer number is not unique";
-        } else {
-            return "";
-        }
+    private Boolean IsCustomerNumberUnique(String customerNumber) {
+        return userRepository.findAllByCustomerNumber(customerNumber).toStream().count() <= 1;
     }
 
 

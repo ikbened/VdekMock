@@ -24,6 +24,7 @@ public class User {
     private String email;
     private String customerNumber;
     private String accountSetId;
+    private String postalCode;
 
     public User() {
         this.id = java.util.UUID.randomUUID().toString();
