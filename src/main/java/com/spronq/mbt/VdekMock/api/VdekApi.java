@@ -14,7 +14,6 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import javax.validation.Valid;
-import java.util.Optional;
 
 @RestController
 @RequestMapping(value = "/shipments", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -55,7 +54,7 @@ public class VdekApi {
             customer.setCustomerNumber(shipment.getCustomerNumber());
             customer.setLabel("LearnId");
 
-            userRepository.save(customer);
+            userRepository.save(customer).block();
             shipment.setProcessedByTask(true);
 
         } else {

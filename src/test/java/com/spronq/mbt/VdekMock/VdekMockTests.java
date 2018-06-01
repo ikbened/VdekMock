@@ -6,7 +6,6 @@ import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
-import org.apache.commons.lang3.StringUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Before;
@@ -113,29 +112,29 @@ public class VdekMockTests {
     @Test
     public void CustomerNumberisNotUnique() {
         String customerNumber = "1718";
-        User user = new User();
-        user.setEmail("aap@mailinator.com");
-        user.setLabel("LearnId");
-        user.setCustomerNumber(customerNumber);
+        User user1 = new User();
+        user1.setEmail("aap@mailinator.com");
+        user1.setLabel("LearnId");
+        user1.setCustomerNumber(customerNumber);
 
         given()
                 .log().everything()
                 .contentType("application/json")
-                .body(user)
+                .body(user1)
                 .when()
                 .post("/users")
                 .then()
                 .statusCode(202);
 
-        user = new User();
-        user.setEmail("noot@mailinator.com");
-        user.setLabel("LearnId");
-        user.setCustomerNumber(customerNumber);
+        User user2 = new User();
+        user2.setEmail("noot@mailinator.com");
+        user2.setLabel("LearnId");
+        user2.setCustomerNumber(customerNumber);
 
         given()
                 .log().everything()
                 .contentType("application/json")
-                .body(user)
+                .body(user2)
                 .when()
                 .post("/users")
                 .then()
@@ -173,29 +172,29 @@ public class VdekMockTests {
     @Test
     public void CustomerEmailIsNotUnique() {
         String email = "aap@mailinator.com";
-        User user = new User();
-        user.setEmail(email);
-        user.setLabel("LearnId");
-        user.setCustomerNumber("1718");
+        User user1 = new User();
+        user1.setEmail(email);
+        user1.setLabel("LearnId");
+        user1.setCustomerNumber("1718");
 
         given()
                 .log().everything()
                 .contentType("application/json")
-                .body(user)
+                .body(user1)
                 .when()
                 .post("/users")
                 .then()
                 .statusCode(202);
 
-        user = new User();
-        user.setEmail(email);
-        user.setLabel("LearnId");
-        user.setCustomerNumber("1719");
+        User user2 = new User();
+        user2.setEmail(email);
+        user2.setLabel("LearnId");
+        user2.setCustomerNumber("1719");
 
         given()
                 .log().everything()
                 .contentType("application/json")
-                .body(user)
+                .body(user2)
                 .when()
                 .post("/users")
                 .then()
@@ -256,10 +255,10 @@ public class VdekMockTests {
                 .then()
                 .statusCode(200)
                 .log().body()
-                .body("emailAddress", equalTo(custEmail))
-                .body("customerNumber", equalTo(custNumber))
-                .body("label", equalTo("LearnId"))
-                .body("accountSetId", equalTo(null));
+                .body("[0].email", equalTo(custEmail))
+                .body("[0].customerNumber", equalTo(custNumber))
+                .body("[0].label", equalTo("LearnId"))
+                .body("[0].accountSetId", equalTo(null));
 
     }
 
