@@ -10,11 +10,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import javax.validation.Valid;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping(value = "/shipments", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -66,7 +70,7 @@ public class VdekApi {
         String custNumber = shipment.getCustomerNumber();
 
         if ( !IsCustomerNumberUnique(shipment.getCustomerNumber()) ) {
-            errMsg = "CustomerNumber is not unique."
+            errMsg = "CustomerNumber is not unique.";
         }
 
         if (StringUtils.isEmpty(errMsg)) {
@@ -84,8 +88,15 @@ public class VdekApi {
         }
 
         if (StringUtils.isEmpty(errMsg)) {
+            shipment.setEmailUser(email);
+            repository.save(shipment).block();
+
             if ( IsLearnIdAccountWithEmailPresent(email) ) {
-                customer = userRepository.findAllByEmail(email);
+                customer = new User();
+                //List<User> customers = userRepository.findAllByEmail(email).collectList();
+                //Mono<User>
+                //customers.ta
+                //customer = customers.get(0);
             } else {
                 customer = new User();
                 customer.setEmail(shipment.getEmailAddress());
@@ -95,18 +106,20 @@ public class VdekApi {
                 userRepository.save(customer).block();
             }
 
-            User user0 = userRepository.findAllByCustomerNumber(custNumber).map()
+            List<User> users=null;
+            //Map<Integer, User> users = userRepository.findAllByCustomerNumber(custNumber).map();
 
-            if (user0 != null) {
-
-                if (String.isEmpty(user0.getAccountSetId())) {
-                    user0.setAccountSetId(java.util.UUID.randomUUID());
-                    userRepository.save(user0).block();
-                }
-                customer.setCustomerNumber(user0.getAccountSetId());
+            if (CollectionUtils.isEmpty(users)) { //users.size() == 1) {
+//                User user0 = users.get(0);
+//                if (String.isEmpty(user0.getAccountSetId())) {
+//                    user0.setAccountSetId(java.util.UUID.randomUUID());
+//                    userRepository.save(user0).block();
+//                }
+//                customer.setCustomerNumber(user0.getAccountSetId());
             } else {
                 customer.setCustomerNumber(custNumber);
             }
+
 
             customer.setPostalCode(shipment.getPostalCode());
             userRepository.save(customer).block();
@@ -117,7 +130,7 @@ public class VdekApi {
 
 
     private Boolean IsLearnIdAccountWithEmailPresent(String email) {
-        return CountLearnIdAccountsByEmail(email) = 1;
+        return CountLearnIdAccountsByEmail(email) == 1;
     }
 
     private Boolean IsEmailUniqueForLearnIdAccounts(String email) {
@@ -137,8 +150,40 @@ public class VdekApi {
 
 
     private String resolveUser(ExtendedShipment shipment) {
+        String errMsg = "";
+        String email = "";
+        User user;
 
-        return "";
+        if (!shipment.getAdministration().equalsIgnoreCase("Dynamics")) {
+            errMsg = "Unknown administration";
+        }
+
+        if (StringUtils.isEmpty(errMsg)) {
+            if (StringUtils.isEmpty(shipment.getEmailUser())) {
+                shipment.setEmailUser(shipment.getEmailAddress());
+                repository.save(shipment).block();
+            }
+        }
+
+        if (StringUtils.isEmpty(errMsg)) {
+            email = shipment.getEmailUser();
+            if ( !IsEmailUniqueForLearnIdAccounts(email) ) {
+                errMsg = "User email is not unique within LearnId";
+            }
+        }
+
+        if (StringUtils.isEmpty(errMsg)) {
+            if ( !IsLearnIdAccountWithEmailPresent(email) ) {
+                user = new User();
+                user.setLabel("LearnId");
+                user.setEmail(email);
+                userRepository.save(user).block();
+            } else {
+                //Do nothing
+            }
+        }
+
+        return errMsg;
 
     }
 }
