@@ -92,6 +92,7 @@ public class BasicTests {
     public void GetShipment() {
 
         String shipmentId = given()
+                .log().everything()
                 .contentType("application/json")
                 .body(extShipment.toString())
                 .when()
@@ -102,6 +103,7 @@ public class BasicTests {
                 .jsonPath().getString("shipmentId");
 
         given()
+                .log().everything()
                 .pathParam("ShipmentId", shipmentId)
                 .when()
                 .get("/shipments/{ShipmentId}")

@@ -92,11 +92,9 @@ public class VdekApi {
             repository.save(shipment).block();
 
             if ( IsLearnIdAccountWithEmailPresent(email) ) {
-                customer = new User();
                 //List<User> customers = userRepository.findAllByEmail(email).collectList();
-                //Mono<User>
-                //customers.ta
                 //customer = customers.get(0);
+                customer = new User();
             } else {
                 customer = new User();
                 customer.setEmail(shipment.getEmailAddress());
