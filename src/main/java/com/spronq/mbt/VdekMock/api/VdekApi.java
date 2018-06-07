@@ -91,19 +91,54 @@ public class VdekApi {
             if ( IsLearnIdAccountWithEmailPresent(email) ) {
                 // This assumes there's only one customer found for this email
                 customer = userRepository.findAllByEmail(email).blockFirst();
-
             } else {
                 customer = new User();
                 customer.setEmail(shipment.getEmailAddress());
-                customer.setCustomerNumber(shipment.getCustomerNumber());
                 customer.setLabel("LearnId");
                 customer.setPostalCode(shipment.getPostalCode());
+                userRepository.save(customer).block();
             }
 
-            userRepository.save(customer).block();
+            if (IsCustomerNumberInAccountSet(shipment.getCustomerNumber(), customer.getAccountSetId())) {
+                // do nothing
+            } else {
+                User c = userRepository.findAllByCustomerNumber(customer.getAccountSetId()).blockFirst();
+
+                if (StringUtils.isEmpty(c.getAccountSetId())) {
+                    customer.setCustomerNumber(shipment.getCustomerNumber());
+                } else {
+                    linkUsers(customer, c);
+                }
+            }
+
+            customer.setCustomerNumber(shipment.getCustomerNumber());
          }
 
         return errMsg;
+    }
+
+    private void linkUsers(User u1, User u2) {
+        String accountSetId;
+        if (StringUtils.isEmpty(u1.getAccountSetId()) && StringUtils.isEmpty(u1.getAccountSetId())) {
+            accountSetId = java.util.UUID.randomUUID().toString();
+            u1.setAccountSetId(accountSetId);
+            u2.setAccountSetId(accountSetId);
+        } else if (StringUtils.isEmpty(u1.getAccountSetId()) && !StringUtils.isEmpty(u1.getAccountSetId())) {
+            u1.setAccountSetId(u2.getAccountSetId());
+        } else {
+            u2.setAccountSetId(u1.getAccountSetId());
+        }
+        userRepository.save(u1).block();
+        userRepository.save(u2).block();
+    }
+
+    private boolean IsCustomerNumberInAccountSet(String customerNumber, String accountSetId) {
+        if (StringUtils.isEmpty(accountSetId)) {
+            return false;
+        } else {
+            User customer = userRepository.findAllByCustomerNumber(customerNumber).blockFirst();
+            return accountSetId.equals(customer.getAccountSetId());
+        }
     }
 
 
