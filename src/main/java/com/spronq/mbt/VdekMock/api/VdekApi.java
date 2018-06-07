@@ -62,7 +62,6 @@ public class VdekApi {
         String errMsg = "";
         String email = "";
         User customer;
-        String custNumber = shipment.getCustomerNumber();
 
         if ( !IsCustomerNumberUnique(shipment.getCustomerNumber()) ) {
             errMsg = "CustomerNumber is not unique.";
@@ -72,8 +71,6 @@ public class VdekApi {
             if (StringUtils.isEmpty(shipment.getEmailAddress())) {
                 email = shipment.getCustomerNumber() + "@thelearningnetwork.nl";
             } else {
-                // FIXME: Which email address is needed here? Should this not be
-                // email = shipment.getEmailUser();
                 email = shipment.getEmailAddress();
             }
         }
@@ -93,9 +90,8 @@ public class VdekApi {
                 customer = userRepository.findAllByEmail(email).blockFirst();
             } else {
                 customer = new User();
-                customer.setEmail(shipment.getEmailAddress());
+                customer.setEmail(email);
                 customer.setLabel("LearnId");
-                customer.setPostalCode(shipment.getPostalCode());
                 userRepository.save(customer).block();
             }
 
@@ -104,14 +100,16 @@ public class VdekApi {
             } else {
                 User c = userRepository.findAllByCustomerNumber(customer.getAccountSetId()).blockFirst();
 
-                if (StringUtils.isEmpty(c.getAccountSetId())) {
+                if (c.equals(null)) {
                     customer.setCustomerNumber(shipment.getCustomerNumber());
+                    userRepository.save(customer).block();
                 } else {
                     linkUsers(customer, c);
                 }
             }
 
-            customer.setCustomerNumber(shipment.getCustomerNumber());
+            customer.setPostalCode(shipment.getPostalCode());
+            userRepository.save(customer).block();
          }
 
         return errMsg;
@@ -163,40 +161,32 @@ public class VdekApi {
 
 
     private String resolveUser(ExtendedShipment shipment) {
-        String errMsg = "";
         String email = "";
         User user;
 
         if (!shipment.getAdministration().equalsIgnoreCase("Dynamics")) {
-            errMsg = "Unknown administration";
+            return  "Unknown administration";
         }
 
-        if (StringUtils.isEmpty(errMsg)) {
-            if (StringUtils.isEmpty(shipment.getEmailUser())) {
-                shipment.setEmailUser(shipment.getEmailAddress());
-                repository.save(shipment).block();
-            }
+        if (StringUtils.isEmpty(shipment.getEmailUser())) {
+            shipment.setEmailUser(shipment.getEmailAddress());
+            repository.save(shipment).block();
+            return "";
         }
 
-        if (StringUtils.isEmpty(errMsg)) {
-            email = shipment.getEmailUser();
-            if ( !IsEmailUniqueForLearnIdAccounts(email) ) {
-                errMsg = "User email is not unique within LearnId";
-            }
+        if ( !IsEmailUniqueForLearnIdAccounts(shipment.getEmailUser()) ) {
+                return "User email is not unique within LearnId";
         }
 
-        if (StringUtils.isEmpty(errMsg)) {
-            if ( !IsLearnIdAccountWithEmailPresent(email) ) {
-                user = new User();
-                user.setLabel("LearnId");
-                user.setEmail(email);
-                userRepository.save(user).block();
-            } else {
-                //Do nothing
-            }
+        if ( !IsLearnIdAccountWithEmailPresent(shipment.getEmailUser()) ) {
+            user = new User();
+            user.setLabel("LearnId");
+            user.setEmail(email);
+            userRepository.save(user).block();
+        } else {
+            //Do nothing
         }
 
-        return errMsg;
-
+        return "";
     }
 }
