@@ -166,6 +166,7 @@ public class VdekMockTests {
                 .when()
                 .post("/users")
                 .then()
+                .log().body()
                 .statusCode(202);
 
         User user2 = new User();
@@ -180,6 +181,7 @@ public class VdekMockTests {
                 .when()
                 .post("/users")
                 .then()
+                .log().body()
                 .statusCode(202);
 
 
@@ -191,6 +193,7 @@ public class VdekMockTests {
                 .post("/shipments")
                 .then()
                 .assertThat()
+                .log().body()
                 .statusCode(202)
                 .body("errorMessage", equalTo("Customer email is not unique within LearnId"));
     }

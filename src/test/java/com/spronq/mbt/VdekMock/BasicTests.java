@@ -172,6 +172,7 @@ public class BasicTests {
                 .when()
                 .get("/users")
                 .then()
+                .log().headers()
                 .log().body()
                 .statusCode(200)
                 .body("[0].customerNumber", equalTo(user.getCustomerNumber()));
