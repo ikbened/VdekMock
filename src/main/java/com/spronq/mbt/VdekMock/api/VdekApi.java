@@ -4,21 +4,16 @@ import com.spronq.mbt.VdekMock.model.ExtendedShipment;
 import com.spronq.mbt.VdekMock.model.User;
 import com.spronq.mbt.VdekMock.repository.ExtendedShipmentRepository;
 import com.spronq.mbt.VdekMock.repository.UsersRepository;
-import com.sun.org.apache.xpath.internal.operations.Bool;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import javax.validation.Valid;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping(value = "/shipments", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -77,6 +72,8 @@ public class VdekApi {
             if (StringUtils.isEmpty(shipment.getEmailAddress())) {
                 email = shipment.getCustomerNumber() + "@thelearningnetwork.nl";
             } else {
+                // FIXME: Which email address is needed here? Should this not be
+                // email = shipment.getEmailUser();
                 email = shipment.getEmailAddress();
             }
         }
@@ -92,34 +89,17 @@ public class VdekApi {
             repository.save(shipment).block();
 
             if ( IsLearnIdAccountWithEmailPresent(email) ) {
-                //List<User> customers = userRepository.findAllByEmail(email).collectList();
-                //customer = customers.get(0);
-                customer = new User();
+                // This assumes there's only one customer found for this email
+                customer = userRepository.findAllByEmail(email).blockFirst();
+
             } else {
                 customer = new User();
                 customer.setEmail(shipment.getEmailAddress());
                 customer.setCustomerNumber(shipment.getCustomerNumber());
                 customer.setLabel("LearnId");
-
-                userRepository.save(customer).block();
+                customer.setPostalCode(shipment.getPostalCode());
             }
 
-            List<User> users=null;
-            //Map<Integer, User> users = userRepository.findAllByCustomerNumber(custNumber).map();
-
-            if (CollectionUtils.isEmpty(users)) { //users.size() == 1) {
-//                User user0 = users.get(0);
-//                if (String.isEmpty(user0.getAccountSetId())) {
-//                    user0.setAccountSetId(java.util.UUID.randomUUID());
-//                    userRepository.save(user0).block();
-//                }
-//                customer.setCustomerNumber(user0.getAccountSetId());
-            } else {
-                customer.setCustomerNumber(custNumber);
-            }
-
-
-            customer.setPostalCode(shipment.getPostalCode());
             userRepository.save(customer).block();
          }
 
