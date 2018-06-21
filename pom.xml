@@ -114,6 +114,7 @@
                     <layout>JAR</layout>
                 </configuration>
                 <executions>
+
                     <execution>
                         <goals>
                             <goal>repackage</goal>

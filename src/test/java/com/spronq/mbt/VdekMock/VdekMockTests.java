@@ -123,26 +123,18 @@ public class VdekMockTests {
                 .then()
                 .statusCode(202);
 
-        String shipmentId = given()
+        given()
                 .log().everything()
                 .contentType("application/json")
                 .body(extShipment.toString())
                 .when()
                 .post("/shipments")
                 .then()
-                .contentType(ContentType.JSON)
+                .assertThat()
+                .log().body()
                 .statusCode(202)
-                .extract().jsonPath().getString("shipmentId");
+                .body("errorMessage", equalTo("CustomerNumber is not unique."));
 
-        given()
-               .pathParam("ShipmentId", shipmentId)
-               .when()
-               .get("/shipments/{ShipmentId}")
-               .then()
-               .log().body()
-               .assertThat()
-               .statusCode(200)
-               .body("errorMessage", equalTo("CustomerNumber is not unique."));
     }
 
     @Test
@@ -192,7 +184,6 @@ public class VdekMockTests {
                 .when()
                 .post("/shipments")
                 .then()
-                .assertThat()
                 .log().body()
                 .statusCode(202)
                 .body("errorMessage", equalTo("Customer email is not unique within LearnId"));
@@ -218,7 +209,8 @@ public class VdekMockTests {
                 .when()
                 .post("/shipments")
                 .then()
-                .assertThat()
+                .log().body()
+                //.assertThat()
                 .statusCode(202)
                 .body("errorMessage", equalTo(null))
                 .body("processedByTask", equalTo(true))
