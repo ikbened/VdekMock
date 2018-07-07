@@ -1,11 +1,8 @@
 package com.spronq.mbt.VdekMock;
 
 import com.spronq.mbt.VdekMock.model.User;
-import com.spronq.mbt.VdekMock.repository.ExtendedShipmentRepository;
+import com.spronq.mbt.VdekMock.repository.ShipmentsRepository;
 import io.restassured.RestAssured;
-import io.restassured.http.ContentType;
-import io.restassured.path.json.JsonPath;
-import io.restassured.response.Response;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Before;
@@ -28,7 +25,7 @@ import static org.hamcrest.Matchers.hasSize;
 public class VdekMockTests {
 
     @Autowired
-    ExtendedShipmentRepository shipmentRepository;
+    ShipmentsRepository shipmentsRepository;
 
     private JSONObject extShipment;
 
@@ -98,7 +95,7 @@ public class VdekMockTests {
         User user1 = new User();
         user1.setEmail("aap" + newTestId() + "@mailinator.com");
         user1.setLabel("LearnId");
-        user1.setCustomerNumber(custNumber);
+        //user1.setCustomerNumber(custNumber);
 
         given()
                 .log().everything()
@@ -112,7 +109,7 @@ public class VdekMockTests {
         User user2 = new User();
         user2.setEmail("noot" + newTestId() + "@mailinator.com");
         user2.setLabel("LearnId");
-        user2.setCustomerNumber(custNumber);
+        //user2.setCustomerNumber(custNumber);
 
         given()
                 .log().everything()
@@ -149,7 +146,7 @@ public class VdekMockTests {
         User user1 = new User();
         user1.setEmail(email);
         user1.setLabel("LearnId");
-        user1.setCustomerNumber(newTestId());
+        //user1.setCustomerNumber(newTestId());
 
         given()
                 .log().everything()
@@ -164,7 +161,7 @@ public class VdekMockTests {
         User user2 = new User();
         user2.setEmail(email);
         user2.setLabel("LearnId");
-        user2.setCustomerNumber(newTestId());
+        //user2.setCustomerNumber(newTestId());
 
         given()
                 .log().everything()
@@ -375,7 +372,7 @@ public class VdekMockTests {
         User user1 = new User();
         user1.setEmail(email);
         user1.setLabel("LearnId");
-        user1.setCustomerNumber("1718");
+        //user1.setCustomerNumber("1718");
 
         given()
                 .log().everything()
@@ -389,7 +386,7 @@ public class VdekMockTests {
         User user2 = new User();
         user2.setEmail(email);
         user2.setLabel("LearnId");
-        user2.setCustomerNumber("1719");
+        //user2.setCustomerNumber("1719");
 
         given()
                 .log().everything()
@@ -426,7 +423,7 @@ public class VdekMockTests {
         User user1 = new User();
         user1.setEmail(email);
         user1.setLabel("LearnId");
-        user1.setCustomerNumber("1718");
+        //user1.setCustomerNumber("1718");
 
         given()
                 .log().everything()

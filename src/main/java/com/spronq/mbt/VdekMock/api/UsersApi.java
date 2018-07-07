@@ -35,10 +35,10 @@ public class UsersApi {
         return repository.findAllByEmail(email);
     }
 
-    @GetMapping(params = "customerNumber")
-    public Flux<User> getUsersByCustomerNumber(@RequestParam(value = "customerNumber") String customerNumber) {
-        return repository.findAllByCustomerNumber(customerNumber);
-    }
+//    @GetMapping(params = "customerNumber")
+//    public Flux<User> getUsersByCustomerNumber(@RequestParam(value = "customerNumber") String customerNumber) {
+//        return repository.findAllByCustomerNumber(customerNumber);
+//    }
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(value = HttpStatus.ACCEPTED)

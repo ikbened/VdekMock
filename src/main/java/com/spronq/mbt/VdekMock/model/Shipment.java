@@ -16,7 +16,7 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @ToString
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
-public class ExtendedShipment {
+public class Shipment {
 
     @Id
     private String shipmentId;
@@ -54,7 +54,7 @@ public class ExtendedShipment {
     private String errorMessage;
     private Boolean processedByTask;
 
-    public ExtendedShipment() {
+    public Shipment() {
         this.shipmentId = java.util.UUID.randomUUID().toString();
     }
 

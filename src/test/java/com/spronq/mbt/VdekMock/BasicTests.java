@@ -1,7 +1,7 @@
 package com.spronq.mbt.VdekMock;
 
 import com.spronq.mbt.VdekMock.model.User;
-import com.spronq.mbt.VdekMock.repository.ExtendedShipmentRepository;
+import com.spronq.mbt.VdekMock.repository.ShipmentsRepository;
 import io.restassured.RestAssured;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -24,9 +24,9 @@ import static org.hamcrest.Matchers.hasSize;
 public class BasicTests {
 
     @Autowired
-    ExtendedShipmentRepository shipmentRepository;
+    ShipmentsRepository shipmentsRepository;
 
-    private JSONObject extShipment;
+    private JSONObject shipment;
 
     @Before
     public void initPath() {
@@ -40,8 +40,8 @@ public class BasicTests {
         String d = sdf.format(new Date());
 
         try {
-            extShipment = new JSONObject();
-            extShipment
+            shipment = new JSONObject();
+            shipment
                     .put("customerNumber", "1718")
                     .put("ean", "9789034506801")
                     .put("orderId", "1718_" + d)
@@ -79,7 +79,7 @@ public class BasicTests {
 
         given()
 				.contentType("application/json")
-				.body(extShipment.toString())
+				.body(shipment.toString())
 				.when()
 				.post("/shipments")
 				.then()
@@ -94,7 +94,7 @@ public class BasicTests {
         String shipmentId = given()
                 .log().everything()
                 .contentType("application/json")
-                .body(extShipment.toString())
+                .body(shipment.toString())
                 .when()
                 .post("/shipments")
                 .then()
@@ -137,7 +137,7 @@ public class BasicTests {
         User user = new User();
         user.setEmail("aap@aap.nl");
         user.setLabel("LearnId");
-        user.setCustomerNumber("1819");
+        //user.setCustomerNumber("1819");
 
         given()
                 .contentType("application/json")
@@ -155,7 +155,7 @@ public class BasicTests {
         User user = new User();
         user.setEmail("aap@aap.nl");
         user.setLabel("LearnId");
-        user.setCustomerNumber("1819");
+        //user.setCustomerNumber("1819");
 
         given()
                 .log().everything()
@@ -174,8 +174,8 @@ public class BasicTests {
                 .then()
                 .log().headers()
                 .log().body()
-                .statusCode(200)
-                .body("[0].customerNumber", equalTo(user.getCustomerNumber()));
+                .statusCode(200);
+                //.body("[0].customerNumber", equalTo(user.getCustomerNumber()));
 
     }
 
@@ -184,7 +184,7 @@ public class BasicTests {
         User user = new User();
         user.setEmail("aap@mailinator.com");
         user.setLabel("LearnId");
-        user.setCustomerNumber("1819");
+        //user.setCustomerNumber("1819");
 
         given()
                 .log().everything()
@@ -198,7 +198,7 @@ public class BasicTests {
         User user2 = new User();
         user2.setEmail(user.getEmail());
         user2.setLabel(user.getLabel());
-        user2.setCustomerNumber("1820");
+        //user2.setCustomerNumber("1820");
 
         given()
                 .log().everything()
