@@ -3,6 +3,7 @@ package com.spronq.mbt.VdekMock.api;
 import com.spronq.mbt.VdekMock.model.ExtendedShipment;
 import com.spronq.mbt.VdekMock.model.User;
 import com.spronq.mbt.VdekMock.repository.ExtendedShipmentRepository;
+import com.spronq.mbt.VdekMock.repository.UserClaimsRepository;
 import com.spronq.mbt.VdekMock.repository.UsersRepository;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,11 +22,13 @@ public class VdekApi {
 
     private ExtendedShipmentRepository repository;
     private UsersRepository userRepository;
+    private UserClaimsRepository userClaimsRepository;
 
     @Autowired
-    public VdekApi(ExtendedShipmentRepository repository, UsersRepository userRepository) {
+    public VdekApi(ExtendedShipmentRepository repository, UsersRepository userRepository, UserClaimsRepository userClaimsRepository) {
         this.repository = repository;
         this.userRepository = userRepository;
+        this.userClaimsRepository = userClaimsRepository;
     }
 
     @GetMapping
@@ -156,7 +159,8 @@ public class VdekApi {
     }
 
     private Boolean IsCustomerNumberUnique(String customerNumber) {
-        return userRepository.findAllByCustomerNumber(customerNumber).toStream().count() <= 1;
+        //Is distinct on UserId necessary?
+        return userClaimsRepository.findAllByClaimValue(customerNumber).toStream().filter(u -> u.getClaimType().equalsIgnoreCase("CustomerNumber")).count() <= 1;
     }
 
 

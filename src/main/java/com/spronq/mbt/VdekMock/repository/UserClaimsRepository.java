@@ -11,6 +11,6 @@ import reactor.core.publisher.Mono;
 public interface UserClaimsRepository extends ReactiveMongoRepository<UserClaim, String> {
 
     Flux<UserClaim> findAllByUserId(String userId);
-
-
+    Flux<UserClaim> findAllByClaimValue(String claimValue);
+    Flux<UserClaim> findAllByClaimType(String claimType);
 }

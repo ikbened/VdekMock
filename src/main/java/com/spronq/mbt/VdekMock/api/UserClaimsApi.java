@@ -37,6 +37,16 @@ public class UserClaimsApi {
         return repository.findAllByUserId(userId);
     }
 
+    @GetMapping(params = "claimType")
+    public Flux<UserClaim> getUserClaimsByClaimType(@RequestParam(value = "claimVType") String claimType) {
+        return repository.findAllByClaimType(claimType);
+    }
+
+    @GetMapping(params = "claimValue")
+    public Flux<UserClaim> getUserClaimsByClaimValue(@RequestParam(value = "claimValue") String claimValue) {
+        return repository.findAllByClaimValue(claimValue);
+    }
+
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(value = HttpStatus.ACCEPTED)
     public Mono<UserClaim> createUserClaim(@Valid @RequestBody UserClaim userClaim) {

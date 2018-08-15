@@ -96,64 +96,37 @@ public class VdekMockTests {
             //Catch something
         }
 
-        User u = new User();
-        u.setEmail("aap" + newTestId() + "@mailinator.com");
-        u.setLabel("LearnId");
+        //Create two users with same customerNumber.
+        String[] emails = {"aap", "noot"};
+        for (String email: emails){
+            User u = new User();
+            u.setEmail(email + newTestId() + "@mailinator.com");
+            u.setLabel("LearnId");
 
-        given()
-                .log().everything()
-                .contentType("application/json")
-                .body(u)
-                .when()
-                .post("/users")
-                .then()
-                .statusCode(202);
+            given()
+                    .log().everything()
+                    .contentType("application/json")
+                    .body(u)
+                    .when()
+                    .post("/users")
+                    .then()
+                    .statusCode(202);
 
-        UserClaim uc = new UserClaim();
-        uc.setUserId(u.getId());
-        uc.setClaimType("CustomerNumber");
-        uc.setClaimType(custNumber);
+            UserClaim uc = new UserClaim();
+            uc.setUserId(u.getId());
+            uc.setClaimType("CustomerNumber");
+            uc.setClaimValue(custNumber);
 
-        given()
-                .log().everything()
-                .contentType("application/json")
-                .body(uc)
-                .when()
-                .post("/userclaims")
-                .then()
-                .assertThat()
-                .statusCode(202);
-
-
-        u = new User();
-        u.setEmail("noot" + newTestId() + "@mailinator.com");
-        u.setLabel("LearnId");
-        u.setCustomerNumber(custNumber);
-
-        given()
-                .log().everything()
-                .contentType("application/json")
-                .body(u)
-                .when()
-                .post("/users")
-                .then()
-                .statusCode(202);
-
-
-        uc = new UserClaim();
-        uc.setUserId(u.getId());
-        uc.setClaimType("CustomerNumber");
-        uc.setClaimType(custNumber);
-
-        given()
-                .log().everything()
-                .contentType("application/json")
-                .body(uc)
-                .when()
-                .post("/userclaims")
-                .then()
-                .assertThat()
-                .statusCode(202);
+            given()
+                    .log().everything()
+                    .contentType("application/json")
+                    .body(uc)
+                    .when()
+                    .post("/userclaims")
+                    .then()
+                    .assertThat()
+                    .statusCode(202);
+        }
 
         given()
                 .log().everything()
