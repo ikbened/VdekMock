@@ -20,9 +20,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import static io.restassured.RestAssured.given;
-import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
@@ -151,36 +149,21 @@ public class VdekMockTests {
             //some exception handler code.
         }
 
-        User user1 = new User();
-        user1.setEmail(email);
-        user1.setLabel("LearnId");
-        user1.setCustomerNumber(newTestId());
+        for (int i=0; i<2; i++) {
+            User u = new User();
+            u.setEmail(email);
+            u.setLabel("LearnId");
 
-        given()
-                .log().everything()
-                .contentType("application/json")
-                .body(user1)
-                .when()
-                .post("/users")
-                .then()
-                .log().body()
-                .statusCode(202);
-
-        User user2 = new User();
-        user2.setEmail(email);
-        user2.setLabel("LearnId");
-        user2.setCustomerNumber(newTestId());
-
-        given()
-                .log().everything()
-                .contentType("application/json")
-                .body(user2)
-                .when()
-                .post("/users")
-                .then()
-                .log().body()
-                .statusCode(202);
-
+            given()
+                    .log().everything()
+                    .contentType("application/json")
+                    .body(u)
+                    .when()
+                    .post("/users")
+                    .then()
+                    .log().body()
+                    .statusCode(202);
+        }
 
         given()
                 .log().everything()
@@ -193,6 +176,46 @@ public class VdekMockTests {
                 .statusCode(202)
                 .body("errorMessage", equalTo("Customer email is not unique within LearnId"));
     }
+
+
+    @Test
+    public void customerEmailIsUniqueWithinLearnId() {
+        String email = "";
+        try {
+            email = extShipment.get("emailAddress").toString();
+        } catch (JSONException e) {
+            //some exception handler code.
+        }
+
+        String[] labels = {"LearnId", "VDE"};
+        for (String label: labels) {
+            User u = new User();
+            u.setEmail(email);
+            u.setLabel(label);
+
+            given()
+                    .log().everything()
+                    .contentType("application/json")
+                    .body(u)
+                    .when()
+                    .post("/users")
+                    .then()
+                    .log().body()
+                    .statusCode(202);
+        }
+
+        given()
+                .log().everything()
+                .contentType("application/json")
+                .body(extShipment.toString())
+                .when()
+                .post("/shipments")
+                .then()
+                .log().body()
+                .statusCode(202)
+                .body("errorMessage", isEmptyOrNullString());
+    }
+
 
 
     @Test
