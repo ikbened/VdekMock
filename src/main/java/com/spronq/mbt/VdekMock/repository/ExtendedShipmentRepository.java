@@ -1,9 +1,9 @@
 package com.spronq.mbt.VdekMock.repository;
 
-import com.spronq.mbt.VdekMock.model.Shipment;
+import com.spronq.mbt.VdekMock.model.ExtendedShipment;
 import org.springframework.data.mongodb.repository.ReactiveMongoRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface ShipmentsRepository extends ReactiveMongoRepository<Shipment, String> {
+public interface ExtendedShipmentRepository extends ReactiveMongoRepository<ExtendedShipment, String> {
 }

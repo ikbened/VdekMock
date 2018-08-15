@@ -10,7 +10,6 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDate;
-import java.util.List;
 
 @Document(collection = "users")
 @Data
@@ -23,6 +22,9 @@ public class User {
     private String id;
     private String label;
     private String email;
+    private String customerNumber;
+    private String accountSetId;
+    private String postalCode;
 
     public User() {
         this.id = java.util.UUID.randomUUID().toString();

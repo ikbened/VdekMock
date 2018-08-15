@@ -1,10 +1,8 @@
 package com.spronq.mbt.VdekMock.api;
 
-import com.spronq.mbt.VdekMock.model.Shipment;
+import com.spronq.mbt.VdekMock.model.ExtendedShipment;
 import com.spronq.mbt.VdekMock.model.User;
-import com.spronq.mbt.VdekMock.model.UserClaim;
-import com.spronq.mbt.VdekMock.repository.ShipmentsRepository;
-import com.spronq.mbt.VdekMock.repository.UserClaimsRepository;
+import com.spronq.mbt.VdekMock.repository.ExtendedShipmentRepository;
 import com.spronq.mbt.VdekMock.repository.UsersRepository;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,35 +19,32 @@ import javax.validation.Valid;
 @RequestMapping(value = "/shipments", produces = MediaType.APPLICATION_JSON_VALUE)
 public class VdekApi {
 
-    private ShipmentsRepository shipmentsRepository;
+    private ExtendedShipmentRepository repository;
     private UsersRepository userRepository;
-    private UserClaimsRepository userClaimsRepository;
 
     @Autowired
-    public VdekApi(ShipmentsRepository repository, UsersRepository userRepository, UserClaimsRepository userClaims) {
-        this.shipmentsRepository = repository;
+    public VdekApi(ExtendedShipmentRepository repository, UsersRepository userRepository) {
+        this.repository = repository;
         this.userRepository = userRepository;
-        this.userClaimsRepository = userClaims;
     }
 
     @GetMapping
-    public Flux<Shipment> getAllShipments() {
-        return shipmentsRepository.findAll();
+    public Flux<ExtendedShipment> getAllShipments() {
+        return repository.findAll();
     }
 
     @GetMapping("/{id}")
-    public Mono<ResponseEntity<Shipment>> getShipmentById(@PathVariable(value = "id") String shipmentId) {
-        return shipmentsRepository.findById(shipmentId)
+    public Mono<ResponseEntity<ExtendedShipment>> getShipmentById(@PathVariable(value = "id") String shipmentId) {
+        return repository.findById(shipmentId)
                 .map(ResponseEntity::ok)
                 .defaultIfEmpty(ResponseEntity.notFound().build());
     }
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(value = HttpStatus.ACCEPTED)
-    public Mono<Shipment> createShipments(@Valid @RequestBody Shipment shipment) {
+    public Mono<ExtendedShipment> createShipments(@Valid @RequestBody ExtendedShipment shipment) {
 
         String errMsg = resolveCustomer(shipment);
-
         if (StringUtils.isEmpty(errMsg))
             errMsg = resolveUser(shipment);
 
@@ -60,84 +55,87 @@ public class VdekApi {
             shipment.setProcessedByTask(false);
         }
 
-        return shipmentsRepository.save(shipment);
+        return repository.save(shipment);
     }
 
-    private String resolveCustomer(Shipment shipment) {
-        String email;
+    private String resolveCustomer(ExtendedShipment shipment) {
+        String errMsg = "";
+        String email = "";
         User customer;
 
         if ( !IsCustomerNumberUnique(shipment.getCustomerNumber()) ) {
-            return "CustomerNumber is not unique.";
+            errMsg = "CustomerNumber is not unique.";
         }
 
-        if ( StringUtils.isEmpty(shipment.getEmailAddress()) ) {
-            email = shipment.getCustomerNumber() + "@thelearningnetwork.nl";
-        } else {
-            email = shipment.getEmailAddress();
+        if (StringUtils.isEmpty(errMsg)) {
+            if (StringUtils.isEmpty(shipment.getEmailAddress())) {
+                email = shipment.getCustomerNumber() + "@thelearningnetwork.nl";
+            } else {
+                email = shipment.getEmailAddress();
+            }
         }
 
-        if ( !IsEmailUniqueForLearnIdAccounts(email) ) {
-            return "Customer email is not unique within LearnId";
+        if (StringUtils.isEmpty(errMsg)) {
+            if ( !IsEmailUniqueForLearnIdAccounts(email) ) {
+                errMsg = "Customer email is not unique within LearnId";
+            }
         }
 
-        shipment.setEmailUser(email);
-        shipmentsRepository.save(shipment).block();
+        if (StringUtils.isEmpty(errMsg)) {
+            shipment.setEmailUser(email);
+            repository.save(shipment).block();
 
-        if ( IsLearnIdAccountWithEmailPresent(email) ) {
-            // This assumes there's only one customer found for this email
-            customer = userRepository.findAllByEmail(email).blockFirst();
-        } else {
-            customer = new User();
-            customer.setEmail(email);
-            customer.setLabel("LearnId");
+            if ( IsLearnIdAccountWithEmailPresent(email) ) {
+                // This assumes there's only one customer found for this email
+                customer = userRepository.findAllByEmail(email).blockFirst();
+            } else {
+                customer = new User();
+                customer.setEmail(email);
+                customer.setLabel("LearnId");
+                userRepository.save(customer).block();
+            }
+
+            if (IsCustomerNumberInAccountSet(shipment.getCustomerNumber(), customer.getAccountSetId())) {
+                // do nothing
+            } else {
+                User c = userRepository.findAllByCustomerNumber(customer.getAccountSetId()).blockFirst();
+
+                if (c.equals(null)) {
+                    customer.setCustomerNumber(shipment.getCustomerNumber());
+                    userRepository.save(customer).block();
+                } else {
+                    linkUsers(customer, c);
+                }
+            }
+
+            customer.setPostalCode(shipment.getPostalCode());
             userRepository.save(customer).block();
-        }
+         }
 
-
-//        if ( IsCustomerNumberInAccountSet(shipment.getCustomerNumber(), customer.getAccountSet())) {
-//            // do nothing
-//        } if ( IsCustomerNumberFoundOnAnyLearnIdAccount(shipment.getCustomerNumber())) {
-//            User c = userRepository.findAllByCustomerNumber(customer.getAccountSet()).blockFirst();
-//            linkUsers(customer, c);
-//        } else {
-//            //customer.setCustomerNumber(shipment.getCustomerNumber());
-//            userRepository.save(customer).block();
-//        }
-//
-//        customer.setPostalCode(shipment.getPostalCode());
-//        userRepository.save(customer).block();
-
-        return "";
-    }
-
-    private boolean IsCustomerNumberFoundOnAnyLearnIdAccount(String customerNumber) {
-        //return userRepository.findAllByCustomerNumber(customerNumber) <> null;
-        return true;
+        return errMsg;
     }
 
     private void linkUsers(User u1, User u2) {
-//        String accountSetId;
-//        if (StringUtils.isEmpty(u1.getAccountSet()) && StringUtils.isEmpty(u1.getAccountSet())) {
-//            accountSetId = java.util.UUID.randomUUID().toString();
-//            u1.setAccountSet(accountSetId);
-//            u2.setAccountSet(accountSetId);
-//        } else if (StringUtils.isEmpty(u1.getAccountSet()) && !StringUtils.isEmpty(u1.getAccountSet())) {
-//            u1.setAccountSet(u2.getAccountSet());
-//        } else {
-//            u2.setAccountSet(u1.getAccountSet());
-//        }
-//        userRepository.save(u1).block();
-//        userRepository.save(u2).block();
+        String accountSetId;
+        if (StringUtils.isEmpty(u1.getAccountSetId()) && StringUtils.isEmpty(u1.getAccountSetId())) {
+            accountSetId = java.util.UUID.randomUUID().toString();
+            u1.setAccountSetId(accountSetId);
+            u2.setAccountSetId(accountSetId);
+        } else if (StringUtils.isEmpty(u1.getAccountSetId()) && !StringUtils.isEmpty(u1.getAccountSetId())) {
+            u1.setAccountSetId(u2.getAccountSetId());
+        } else {
+            u2.setAccountSetId(u1.getAccountSetId());
+        }
+        userRepository.save(u1).block();
+        userRepository.save(u2).block();
     }
 
     private boolean IsCustomerNumberInAccountSet(String customerNumber, String accountSetId) {
         if (StringUtils.isEmpty(accountSetId)) {
             return false;
         } else {
-//            User customer = userRepository.findAllByCustomerNumber(customerNumber).blockFirst();
-//            return accountSetId.equals(customer.getAccountSet());
-            return false;
+            User customer = userRepository.findAllByCustomerNumber(customerNumber).blockFirst();
+            return accountSetId.equals(customer.getAccountSetId());
         }
     }
 
@@ -158,13 +156,11 @@ public class VdekApi {
     }
 
     private Boolean IsCustomerNumberUnique(String customerNumber) {
-        //return userClaimsRepository.findAllByClaimType("customerNumber").filter(userClaim -> userClaim.getClaimType().equalsIgnoreCase("CustomerNumber") ).toStream().count() <= 1;
-        return userClaimsRepository.findAll({"claimType": "customerNumber", "claimValue": customerNumber}).   toStream().filter(userClaim -> userClaim.getClaimType().equalsIgnoreCase("CustomerNumber") ).toStream().count() <= 1;
-
+        return userRepository.findAllByCustomerNumber(customerNumber).toStream().count() <= 1;
     }
 
 
-    private String resolveUser(Shipment shipment) {
+    private String resolveUser(ExtendedShipment shipment) {
         String email = "";
         User user;
 
@@ -174,7 +170,7 @@ public class VdekApi {
 
         if (StringUtils.isEmpty(shipment.getEmailUser())) {
             shipment.setEmailUser(shipment.getEmailAddress());
-            shipmentsRepository.save(shipment).block();
+            repository.save(shipment).block();
             return "";
         }
 

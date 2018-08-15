@@ -1,7 +1,7 @@
 package com.spronq.mbt.VdekMock.api;
 
-import com.spronq.mbt.VdekMock.model.Shipment;
-import com.spronq.mbt.VdekMock.repository.ShipmentsRepository;
+import com.spronq.mbt.VdekMock.model.ExtendedShipment;
+import com.spronq.mbt.VdekMock.repository.ExtendedShipmentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
@@ -12,18 +12,18 @@ import reactor.core.publisher.Mono;
 @Component
 public class ShipmentHandler {
 
-    private ShipmentsRepository shipmentsRepository;
+    private ExtendedShipmentRepository shipmentRepository;
 
     @Autowired
-    public ShipmentHandler(ShipmentsRepository shipmentsRepository) {
-        this.shipmentsRepository = shipmentsRepository;
+    public ShipmentHandler(ExtendedShipmentRepository shipmentRepository) {
+        this.shipmentRepository = shipmentRepository;
     }
 
     Mono<ServerResponse> allShipments(ServerRequest request) {
         return ServerResponse
                 .ok()
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(shipmentsRepository.findAll(), Shipment.class);
+                .body(shipmentRepository.findAll(), ExtendedShipment.class);
     }
 
     Mono<ServerResponse> getShipmentById(ServerRequest request) {
@@ -32,15 +32,15 @@ public class ShipmentHandler {
         return ServerResponse
                 .ok()
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(shipmentsRepository.findById(id), Shipment.class);
+                .body(shipmentRepository.findById(id), ExtendedShipment.class);
     }
 
     Mono<ServerResponse> createShipment(ServerRequest request) {
-        Mono<Shipment> shipment = request.bodyToMono(Shipment.class);
+        Mono<ExtendedShipment> shipment = request.bodyToMono(ExtendedShipment.class);
 
         return ServerResponse
                 .accepted()
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(shipmentsRepository.insert(shipment), Shipment.class);
+                .body(shipmentRepository.insert(shipment), ExtendedShipment.class);
     }
 }
