@@ -37,23 +37,22 @@ public class BasicTestUserClaims {
 
     @Test
     public void PostUserClaim() {
-        User user = new User();
-        user.setEmail("aap@aap.nl");
-        user.setLabel("LearnId");
+        User u = new User();
+        u.setEmail("aap@aap.nl");
+        u.setLabel("LearnId");
 
-        String userId = given()
+        given()
                 .contentType("application/json")
-                .body(user)
+                .body(u)
                 .when()
                 .post("/users")
                 .then()
                 .assertThat()
                 .statusCode(202)
-                .log().body()
-                .extract().jsonPath().getString("id");
+                .log().body();
 
         UserClaim uc = new UserClaim();
-        uc.setUserId(userId);
+        uc.setUserId(u.getId());
         uc.setClaimType("CustomerNumber");
         uc.setClaimValue("1819");
 
@@ -66,7 +65,7 @@ public class BasicTestUserClaims {
                 .then()
                 .assertThat()
                 .statusCode(202)
-                .body("userId", equalTo(userId))
+                .body("userId", equalTo(u.getId()))
                 .body("claimType", equalTo("CustomerNumber"))
                 .body("claimValue", equalTo("1819"))
                 .log().body();
@@ -74,27 +73,26 @@ public class BasicTestUserClaims {
 
     @Test
     public void GetUserClaimById() {
-        User user = new User();
-        user.setEmail("aap@aap.nl");
-        user.setLabel("LearnId");
+        User u = new User();
+        u.setEmail("aap@aap.nl");
+        u.setLabel("LearnId");
 
-        String userId = given()
+        given()
                 .contentType("application/json")
-                .body(user)
+                .body(u)
                 .when()
                 .post("/users")
                 .then()
                 .assertThat()
                 .statusCode(202)
-                .log().body()
-                .extract().jsonPath().getString("id");
+                .log().body();
 
         UserClaim uc = new UserClaim();
-        uc.setUserId(userId);
+        uc.setUserId(u.getId());
         uc.setClaimType("CustomerNumber");
         uc.setClaimValue("1819");
 
-        String ucId = given()
+        given()
                 .log().everything()
                 .contentType("application/json")
                 .body(uc)
@@ -102,12 +100,11 @@ public class BasicTestUserClaims {
                 .post("/userclaims")
                 .then()
                 .assertThat()
-                .statusCode(202)
-                .extract().jsonPath().getString("id");
+                .statusCode(202);
 
         given()
                 .log().everything()
-                .pathParam("ucId", ucId)
+                .pathParam("ucId", uc.getId())
                 .when()
                 .get("/userclaims/{ucId}")
                 .then()
@@ -120,23 +117,22 @@ public class BasicTestUserClaims {
 
     @Test
     public void GetAllUserClaimsByUserId() {
-        User user = new User();
-        user.setEmail("aap@aap.nl");
-        user.setLabel("LearnId");
+        User u = new User();
+        u.setEmail("aap@aap.nl");
+        u.setLabel("LearnId");
 
-        String userId = given()
+        given()
                 .contentType("application/json")
-                .body(user)
+                .body(u)
                 .when()
                 .post("/users")
                 .then()
                 .assertThat()
                 .statusCode(202)
-                .log().body()
-                .extract().jsonPath().getString("id");
+                .log().body();
 
         UserClaim uc = new UserClaim();
-        uc.setUserId(userId);
+        uc.setUserId(u.getId());
         uc.setClaimType("CustomerNumber");
         uc.setClaimValue("1819");
 
@@ -152,7 +148,7 @@ public class BasicTestUserClaims {
                 .statusCode(202);
 
         uc = new UserClaim();
-        uc.setUserId(userId);
+        uc.setUserId(u.getId());
         uc.setClaimType("accountLink");
         uc.setClaimValue("1");
 
@@ -168,7 +164,7 @@ public class BasicTestUserClaims {
 
         given()
                 .log().everything()
-                .queryParam("userId", userId)
+                .queryParam("userId", u.getId())
                 .when()
                 .get("/userclaims")
                 .then()

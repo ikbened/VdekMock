@@ -1,6 +1,7 @@
 package com.spronq.mbt.VdekMock;
 
 import com.spronq.mbt.VdekMock.model.User;
+import com.spronq.mbt.VdekMock.model.UserClaim;
 import com.spronq.mbt.VdekMock.repository.ExtendedShipmentRepository;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
@@ -95,32 +96,63 @@ public class VdekMockTests {
             //Catch something
         }
 
-        User user1 = new User();
-        user1.setEmail("aap" + newTestId() + "@mailinator.com");
-        user1.setLabel("LearnId");
-        user1.setCustomerNumber(custNumber);
+        User u = new User();
+        u.setEmail("aap" + newTestId() + "@mailinator.com");
+        u.setLabel("LearnId");
 
         given()
                 .log().everything()
                 .contentType("application/json")
-                .body(user1)
+                .body(u)
                 .when()
                 .post("/users")
                 .then()
                 .statusCode(202);
 
-        User user2 = new User();
-        user2.setEmail("noot" + newTestId() + "@mailinator.com");
-        user2.setLabel("LearnId");
-        user2.setCustomerNumber(custNumber);
+        UserClaim uc = new UserClaim();
+        uc.setUserId(u.getId());
+        uc.setClaimType("CustomerNumber");
+        uc.setClaimType(custNumber);
 
         given()
                 .log().everything()
                 .contentType("application/json")
-                .body(user2)
+                .body(uc)
+                .when()
+                .post("/userclaims")
+                .then()
+                .assertThat()
+                .statusCode(202);
+
+
+        u = new User();
+        u.setEmail("noot" + newTestId() + "@mailinator.com");
+        u.setLabel("LearnId");
+        u.setCustomerNumber(custNumber);
+
+        given()
+                .log().everything()
+                .contentType("application/json")
+                .body(u)
                 .when()
                 .post("/users")
                 .then()
+                .statusCode(202);
+
+
+        uc = new UserClaim();
+        uc.setUserId(u.getId());
+        uc.setClaimType("CustomerNumber");
+        uc.setClaimType(custNumber);
+
+        given()
+                .log().everything()
+                .contentType("application/json")
+                .body(uc)
+                .when()
+                .post("/userclaims")
+                .then()
+                .assertThat()
                 .statusCode(202);
 
         given()
