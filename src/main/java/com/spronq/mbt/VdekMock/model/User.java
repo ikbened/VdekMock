@@ -22,8 +22,8 @@ public class User {
     private String id;
     private String label;
     private String email;
-    private String customerNumber;
-    private String accountSetId;
+    //private String customerNumber;
+    //private String accountSetId;
     private String postalCode;
 
     public User() {

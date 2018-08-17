@@ -40,7 +40,6 @@ public class BasicTestUsers {
         User user = new User();
         user.setEmail("aap@aap.nl");
         user.setLabel("LearnId");
-        user.setCustomerNumber("1819");
 
         given()
                 .contentType("application/json")
@@ -58,7 +57,6 @@ public class BasicTestUsers {
         User user = new User();
         user.setEmail("aap@aap.nl");
         user.setLabel("LearnId");
-        user.setCustomerNumber("1819");
 
         given()
                 .log().everything()
@@ -77,8 +75,7 @@ public class BasicTestUsers {
                 .then()
                 .log().headers()
                 .log().body()
-                .statusCode(200)
-                .body("[0].customerNumber", equalTo(user.getCustomerNumber()));
+                .statusCode(200);
 
     }
 
@@ -87,7 +84,6 @@ public class BasicTestUsers {
         User user = new User();
         user.setEmail("aap@mailinator.com");
         user.setLabel("LearnId");
-        user.setCustomerNumber("1819");
 
         given()
                 .log().everything()
@@ -101,7 +97,6 @@ public class BasicTestUsers {
         User user2 = new User();
         user2.setEmail(user.getEmail());
         user2.setLabel(user.getLabel());
-        user2.setCustomerNumber("1820");
 
         given()
                 .log().everything()

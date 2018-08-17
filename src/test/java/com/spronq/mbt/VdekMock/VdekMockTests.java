@@ -1295,7 +1295,6 @@ public class VdekMockTests {
         User user1 = new User();
         user1.setEmail(emailUser);
         user1.setLabel("LearnId");
-        user1.setCustomerNumber("1718");
 
         given()
                 .log().everything()
