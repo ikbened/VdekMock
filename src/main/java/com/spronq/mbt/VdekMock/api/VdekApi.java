@@ -2,6 +2,7 @@ package com.spronq.mbt.VdekMock.api;
 
 import com.spronq.mbt.VdekMock.model.ExtendedShipment;
 import com.spronq.mbt.VdekMock.model.User;
+import com.spronq.mbt.VdekMock.model.UserClaim;
 import com.spronq.mbt.VdekMock.repository.ExtendedShipmentRepository;
 import com.spronq.mbt.VdekMock.repository.UserClaimsRepository;
 import com.spronq.mbt.VdekMock.repository.UsersRepository;
@@ -15,6 +16,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import javax.validation.Valid;
+import java.util.ArrayList;
 
 @RestController
 @RequestMapping(value = "/shipments", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -62,84 +64,115 @@ public class VdekApi {
     }
 
     private String resolveCustomer(ExtendedShipment shipment) {
-        String errMsg = "";
-        String email = "";
-        User customer;
+        String email;
+        User cust;
+        String custNumber = shipment.getCustomerNumber();
 
-        if ( !IsCustomerNumberUnique(shipment.getCustomerNumber()) ) {
-            errMsg = "CustomerNumber is not unique.";
+        if ( !IsCustomerNumberUnique(custNumber) ) {
+            return "CustomerNumber is not unique.";
         }
 
-        if (StringUtils.isEmpty(errMsg)) {
-            if (StringUtils.isEmpty(shipment.getEmailAddress())) {
-                email = shipment.getCustomerNumber() + "@thelearningnetwork.nl";
+        if (StringUtils.isEmpty(shipment.getEmailAddress())) {
+            email = custNumber + "@thelearningnetwork.nl";
+        } else {
+            email = shipment.getEmailAddress();
+        }
+
+        if ( !IsEmailUniqueForLearnIdAccounts(email) ) {
+            return "Customer email is not unique within LearnId";
+        }
+
+        shipment.setEmailAddress(email);
+        repository.save(shipment).block();
+
+        if ( IsLearnIdAccountWithEmailPresent(email) ) {
+            // This assumes there's only one customer found for this email
+            cust = userRepository.findAllByEmail(email).blockFirst();
+        } else {
+            cust = new User();
+            cust.setEmail(email);
+            cust.setLabel("LearnId");
+            userRepository.save(cust).block();
+        }
+
+        if (! IsCustomerNumberInAccountSet(custNumber, cust.getId())){
+            User user = GetUserWithCustomerNumber(shipment.getCustomerNumber());
+            if(user != null){
+                LinkUsers(user, cust);
             } else {
-                email = shipment.getEmailAddress();
+                AddUserClaimToUser(cust, "CustomerNumber", custNumber);
             }
         }
 
-        if (StringUtils.isEmpty(errMsg)) {
-            if ( !IsEmailUniqueForLearnIdAccounts(email) ) {
-                errMsg = "Customer email is not unique within LearnId";
+        cust.setPostalCode(shipment.getPostalCode());
+        userRepository.save(cust).block();
+        return "";
+    }
+
+    private void AddUserClaimToUser(User user, String claimType, String claimValue) {
+        UserClaim uc = new UserClaim();
+        uc.setUserId(user.getId());
+        uc.setClaimType(claimType);
+        uc.setClaimValue(claimValue);
+        userClaimsRepository.save(uc).block();
+    }
+
+    private User GetUserWithCustomerNumber(String customerNumber){
+        UserClaim uc = userClaimsRepository.findAllByClaimType("CustomerNumber")
+                .filter(c -> c.getClaimValue().equalsIgnoreCase(customerNumber)).blockFirst();
+
+        if (uc == null) {
+            return null;
+        } else {
+            return userRepository.findById(uc.getUserId()).block();
+        }
+
+    }
+
+    private void LinkUsers(User u1, User u2) {
+        UserClaim uc = new UserClaim();
+        uc.setUserId(u1.getId());
+        uc.setClaimType("AccountSet");
+        uc.setClaimValue(u2.getId());
+        userClaimsRepository.save(uc).block();
+
+        uc = new UserClaim();
+        uc.setUserId(u2.getId());
+        uc.setClaimType("AccountSet");
+        uc.setClaimValue(u1.getId());
+        userClaimsRepository.save(uc).block();
+    }
+
+    private ArrayList<String> GetAllUserIdsInAccountSet(ArrayList<String> userIds, String userId) {
+        if (! userIds.contains(userId) ) {
+            userIds.add(userId);
+        }
+
+        for (UserClaim uc: userClaimsRepository.findAllByUserId(userId).filter(uc -> uc.getClaimType().equalsIgnoreCase("AccountSet")).toIterable()) {
+            if (! userIds.contains(uc.getClaimValue()) ) {
+                userIds = GetAllUserIdsInAccountSet(userIds, uc.getClaimValue());
             }
         }
 
-        if (StringUtils.isEmpty(errMsg)) {
-            shipment.setEmailUser(email);
-            repository.save(shipment).block();
+        return userIds;
+    }
 
-            if ( IsLearnIdAccountWithEmailPresent(email) ) {
-                // This assumes there's only one customer found for this email
-                customer = userRepository.findAllByEmail(email).blockFirst();
-            } else {
-                customer = new User();
-                customer.setEmail(email);
-                customer.setLabel("LearnId");
-                userRepository.save(customer).block();
-            }
+    private boolean IsCustomerNumberInAccountSet(String customerNumber, String userId) {
+        ArrayList<String> custNumbers = new ArrayList<>();
+        ArrayList<String> userIds = new ArrayList<>();
 
-            if (IsCustomerNumberInAccountSet(shipment.getCustomerNumber(), customer.getAccountSetId())) {
-                // do nothing
-            } else {
-                User c = userRepository.findAllByCustomerNumber(customer.getAccountSetId()).blockFirst();
+        userIds = GetAllUserIdsInAccountSet(userIds, userId);
 
-                if (c.equals(null)) {
-                    customer.setCustomerNumber(shipment.getCustomerNumber());
-                    userRepository.save(customer).block();
-                } else {
-                    linkUsers(customer, c);
+        for (String id: userIds) {
+            for (UserClaim uc: userClaimsRepository.findAllByUserId(id).filter(uc -> uc.getClaimType().equalsIgnoreCase("CustomerNumber")).toIterable()) {
+                if (! custNumbers.contains(uc.getClaimValue()) ) {
+                    custNumbers.add(uc.getClaimValue());
                 }
             }
 
-            customer.setPostalCode(shipment.getPostalCode());
-            userRepository.save(customer).block();
-         }
-
-        return errMsg;
-    }
-
-    private void linkUsers(User u1, User u2) {
-        String accountSetId;
-        if (StringUtils.isEmpty(u1.getAccountSetId()) && StringUtils.isEmpty(u1.getAccountSetId())) {
-            accountSetId = java.util.UUID.randomUUID().toString();
-            u1.setAccountSetId(accountSetId);
-            u2.setAccountSetId(accountSetId);
-        } else if (StringUtils.isEmpty(u1.getAccountSetId()) && !StringUtils.isEmpty(u1.getAccountSetId())) {
-            u1.setAccountSetId(u2.getAccountSetId());
-        } else {
-            u2.setAccountSetId(u1.getAccountSetId());
         }
-        userRepository.save(u1).block();
-        userRepository.save(u2).block();
-    }
 
-    private boolean IsCustomerNumberInAccountSet(String customerNumber, String accountSetId) {
-        if (StringUtils.isEmpty(accountSetId)) {
-            return false;
-        } else {
-            User customer = userRepository.findAllByCustomerNumber(customerNumber).blockFirst();
-            return accountSetId.equals(customer.getAccountSetId());
-        }
+        return custNumbers.contains(customerNumber);
     }
 
 
