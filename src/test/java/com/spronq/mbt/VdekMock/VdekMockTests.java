@@ -4,9 +4,6 @@ import com.spronq.mbt.VdekMock.model.User;
 import com.spronq.mbt.VdekMock.model.UserClaim;
 import com.spronq.mbt.VdekMock.repository.ExtendedShipmentRepository;
 import io.restassured.RestAssured;
-import io.restassured.http.ContentType;
-import io.restassured.path.json.JsonPath;
-import io.restassured.response.Response;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Before;
@@ -15,13 +12,10 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-
 import static io.restassured.RestAssured.given;
-import static io.restassured.RestAssured.post;
 import static org.hamcrest.Matchers.*;
 import static org.hamcrest.Matchers.isEmptyOrNullString;
 
@@ -816,7 +810,7 @@ public class VdekMockTests {
 
         //First user
         User u1 = new User();
-        u1.setEmail("WithCn" + custEmail);
+        u1.setEmail("First" + custEmail);
         u1.setLabel("LearnId");
 
         given()
@@ -842,7 +836,7 @@ public class VdekMockTests {
                 .then()
                 .statusCode(202);
 
-        //Now link both users together
+        //Now link both users
         UserClaim uc = new UserClaim();
         uc.setUserId(u1.getId());
         uc.setClaimType("AccountSet");
@@ -897,7 +891,7 @@ public class VdekMockTests {
                 .assertThat()
                 .statusCode(200)
                 .log().body()
-                .body("email", equalTo("WithCn" + custEmail))
+                .body("email", equalTo("First" + custEmail))
                 .body("label", equalTo("LearnId"))
                 .body("$", not(hasKey("postalCode")));
 
@@ -945,10 +939,211 @@ public class VdekMockTests {
                 .body("[1].claimType", equalToIgnoringCase("CustomerNumber"))
                 .body("[1].claimValue", equalTo(custNumber));
     }
-    //existingCustomerWithoutCustmerNumberInAccountSet
-    //newCustomerWithCustomerNumberInAccountSet
-    //newCustomerWithoutCustmerNumberInAccountSet
 
+    @Test
+    public void CustomerNumberNotInAccountSetButKnown() {
+        String custEmail = "";
+        String custNumber = "";
+        String postalCode = "";
+
+        try {
+            custEmail = extShipment.get("emailAddress").toString();
+            custNumber = extShipment.get("customerNumber").toString();
+            postalCode = extShipment.get("postalCode").toString();
+        } catch (JSONException e) {
+            //some exception handler code.
+        }
+
+        //First user
+        User u1 = new User();
+        u1.setEmail("First" + custEmail);
+        u1.setLabel("LearnId");
+
+        given()
+                .log().everything()
+                .contentType("application/json")
+                .body(u1)
+                .when()
+                .post("/users")
+                .then()
+                .statusCode(202);
+
+        //The second user .....
+        User u2 = new User();
+        u2.setEmail(custEmail);
+        u2.setLabel("LearnId");
+
+        given()
+                .log().everything()
+                .contentType("application/json")
+                .body(u2)
+                .when()
+                .post("/users")
+                .then()
+                .statusCode(202);
+
+        //The third user .....
+        User u3 = new User();
+        u3.setEmail("third" + custEmail);
+        u3.setLabel("LearnId");
+
+        given()
+                .log().everything()
+                .contentType("application/json")
+                .body(u3)
+                .when()
+                .post("/users")
+                .then()
+                .statusCode(202);
+
+        //Now link first and second users
+        UserClaim uc = new UserClaim();
+        uc.setUserId(u1.getId());
+        uc.setClaimType("AccountSet");
+        uc.setClaimValue(u2.getId());
+
+        given()
+                .log().everything()
+                .contentType("application/json")
+                .body(uc)
+                .when()
+                .post("/userclaims")
+                .then()
+                .assertThat()
+                .statusCode(202);
+
+        uc = new UserClaim();
+        uc.setUserId(u2.getId());
+        uc.setClaimType("AccountSet");
+        uc.setClaimValue(u1.getId());
+
+        given()
+                .log().everything()
+                .contentType("application/json")
+                .body(uc)
+                .when()
+                .post("/userclaims")
+                .then()
+                .assertThat()
+                .statusCode(202);
+
+        //Add customerNumber to third user
+        uc = new UserClaim();
+        uc.setUserId(u3.getId());
+        uc.setClaimType("CustomerNumber");
+        uc.setClaimValue(custNumber);
+
+        given()
+                .log().everything()
+                .contentType("application/json")
+                .body(uc)
+                .when()
+                .post("/userclaims")
+                .then()
+                .assertThat()
+                .statusCode(202);
+
+        //Send shipment to VDEK
+        given()
+                .log().everything()
+                .contentType("application/json")
+                .body(extShipment.toString())
+                .when()
+                .post("/shipments")
+                .then()
+                .assertThat()
+                .statusCode(202)
+                .body("errorMessage", isEmptyOrNullString())
+                .body("processedByTask", equalTo(true))
+                .log().body();
+
+        //The first user + userclaim must remain unchanged
+        given()
+                .log().everything()
+                .pathParam("userId", u1.getId())
+                .when()
+                .get("/users/{userId}")
+                .then()
+                .assertThat()
+                .statusCode(200)
+                .log().body()
+                .body("email", equalTo("First" + custEmail))
+                .body("label", equalTo("LearnId"))
+                .body("$", not(hasKey("postalCode")));
+
+        System.out.println("First user - userclaims");
+        given()
+                .log().everything()
+                .queryParam("userId", u1.getId())
+                .when()
+                .get("/userclaims")
+                .then()
+                .log().body()
+                .assertThat()
+                .statusCode(200)
+                .body("$.", hasSize(1))
+                .body("[0].claimType", equalToIgnoringCase("AccountSet"))
+                .body("[0].claimValue", equalToIgnoringCase(u2.getId()));
+
+        //The second user got the postalcode and a link to the third user
+        given()
+                .log().everything()
+                .pathParam("userId", u2.getId())
+                .when()
+                .get("/users/{userId}")
+                .then()
+                .assertThat()
+                .statusCode(200)
+                .log().body()
+                .body("email", equalTo(custEmail))
+                .body("label", equalTo("LearnId"))
+                .body("postalCode", equalTo(postalCode));
+
+        System.out.println("Second user - userclaims");
+        given()
+                .log().everything()
+                .queryParam("userId", u2.getId())
+                .when()
+                .get("/userclaims")
+                .then()
+                .log().body()
+                .assertThat()
+                .statusCode(200)
+                .body("$.", hasSize(2))
+                .body("[0].claimType", equalToIgnoringCase("AccountSet"))
+                .body("[0].claimValue", equalTo(u1.getId()))
+                .body("[1].claimType", equalToIgnoringCase("AccountSet"))
+                .body("[1].claimValue", equalTo(u3.getId()));
+
+        //The third user is now linked to the second user
+        given()
+                .log().everything()
+                .pathParam("userId", u3.getId())
+                .when()
+                .get("/users/{userId}")
+                .then()
+                .assertThat()
+                .statusCode(200)
+                .log().body()
+                .body("email", equalTo("third" + custEmail))
+                .body("label", equalTo("LearnId"))
+                .body("$", not(hasKey("postalCode")));
+
+        given()
+                .log().everything()
+                .queryParam("userId", u3.getId())
+                .when()
+                .get("/userclaims")
+                .then()
+                .log().body()
+                .assertThat()
+                .statusCode(200)
+                .body("$.", hasSize(2))
+                .body("[0].claimType", equalToIgnoringCase("CustomerNumber"))
+                .body("[0].claimValue", equalTo(custNumber))
+                .body("[1].claimType", equalToIgnoringCase("AccountSet"))
+                .body("[1].claimValue", equalTo(u2.getId()));
+    }
 
     @Test
     public void adminIsNotDynamics() {
@@ -979,15 +1174,18 @@ public class VdekMockTests {
     public void newCustomerIsAlsoUserWithoutEmail() {
         String email = "";
         String custNumber = "";
+        String postalCode = "";
 
         try {
             email = extShipment.get("emailAddress").toString();
             custNumber = extShipment.get("customerNumber").toString();
+            postalCode = extShipment.get("postalCode").toString();
             extShipment.remove("emailUser");
         } catch (JSONException e) {
             //some exception handler code.
         }
 
+        //Post the shipment
         given()
                 .log().everything()
                 .contentType("application/json")
@@ -1002,7 +1200,7 @@ public class VdekMockTests {
                 .body("emailUser", equalTo(email))
                 .log().body();
 
-        given()
+        String userId = given()
                 .log().all()
                 .queryParam("email", email)
                 .when()
@@ -1010,24 +1208,25 @@ public class VdekMockTests {
                 .then()
                 .statusCode(200)
                 .log().body()
+                .body("$", hasSize(1))
                 .body("[0].email", equalTo(email))
-                .body("[0].customerNumber", equalTo(custNumber))
                 .body("[0].label", equalTo("LearnId"))
-                .body("[0].accountSetId", equalTo(null));
+                .body("[0].postalCode", equalTo(postalCode))
+                .extract().jsonPath().getString("[0].id");
 
         given()
-                .log().all()
-                .queryParam("email", email)
+                .log().everything()
+                .queryParam("userId", userId)
                 .when()
-                .get("/users")
+                .get("/userclaims")
                 .then()
                 .log().body()
+                .assertThat()
                 .statusCode(200)
-                .body("$.", hasSize(1));
-
+                .body("$.", hasSize(1))
+                .body("[0].claimType", equalToIgnoringCase("CustomerNumber"))
+                .body("[0].claimValue", equalTo(custNumber));
     }
-
-
 
 
     @Test
@@ -1039,35 +1238,23 @@ public class VdekMockTests {
             //some exception handler code.
         }
 
+        //Create two users with same email
+        for(int i=0; i< 2; i++) {
+            User u = new User();
+            u.setEmail(email);
+            u.setLabel("LearnId");
 
-        User user1 = new User();
-        user1.setEmail(email);
-        user1.setLabel("LearnId");
-        user1.setCustomerNumber("1718");
+            given()
+                    .log().everything()
+                    .contentType("application/json")
+                    .body(u)
+                    .when()
+                    .post("/users")
+                    .then()
+                    .statusCode(202);
+        }
 
-        given()
-                .log().everything()
-                .contentType("application/json")
-                .body(user1)
-                .when()
-                .post("/users")
-                .then()
-                .statusCode(202);
-
-        User user2 = new User();
-        user2.setEmail(email);
-        user2.setLabel("LearnId");
-        user2.setCustomerNumber("1719");
-
-        given()
-                .log().everything()
-                .contentType("application/json")
-                .body(user2)
-                .when()
-                .post("/users")
-                .then()
-                .statusCode(202);
-
+        //Send shipment to VDEK
         given()
                 .log().everything()
                 .contentType("application/json")
@@ -1083,16 +1270,23 @@ public class VdekMockTests {
 
     @Test
     public void existingUserEmail() {
-        String email = "";
+        String emailUser = "";
+        String emailCust = "";
+        String postalCode = "";
+        String custNumber = "";
 
         try {
-            email = extShipment.get("emailUser").toString();
+            emailUser = extShipment.get("emailUser").toString();
+            emailCust = extShipment.get("emailAddress").toString();
+            postalCode = extShipment.get("postalCode").toString();
+            custNumber = extShipment.get("customerNumber").toString();
         } catch (JSONException e) {
             //some exception handler code.
         }
 
+        //Create the user
         User user1 = new User();
-        user1.setEmail(email);
+        user1.setEmail(emailUser);
         user1.setLabel("LearnId");
         user1.setCustomerNumber("1718");
 
@@ -1105,6 +1299,7 @@ public class VdekMockTests {
                 .then()
                 .statusCode(202);
 
+        //Send shipment to VDEK
         given()
                 .log().everything()
                 .contentType("application/json")
@@ -1118,42 +1313,79 @@ public class VdekMockTests {
                 .body("processedByTask", equalTo(true))
                 .log().body();
 
-        given()
+        //Check the customer first
+        String userId = given()
                 .log().all()
-                .queryParam("email", email)
+                .queryParam("email", emailCust)
                 .when()
                 .get("/users")
                 .then()
                 .log().body()
                 .statusCode(200)
-                .body("$.", hasSize(1));
+                .body("$.", hasSize(1))
+                .body("[0].email", equalTo(emailCust))
+                .body("[0].label", equalTo("LearnId"))
+                .body("[0].postalCode", equalTo(postalCode))
+                .extract().jsonPath().getString("[0].id");
 
         given()
+                .log().everything()
+                .queryParam("userId", userId)
+                .when()
+                .get("/userclaims")
+                .then()
+                .log().body()
+                .assertThat()
+                .statusCode(200)
+                .body("$.", hasSize(1))
+                .body("[0].claimType", equalToIgnoringCase("CustomerNumber"))
+                .body("[0].claimValue", equalTo(custNumber));
+
+        //Now check the user
+        userId = given()
                 .log().all()
-                .queryParam("email", email)
+                .queryParam("email", emailUser)
                 .when()
                 .get("/users")
                 .then()
-                .statusCode(200)
                 .log().body()
-                .body("[0].email", equalTo(email))
-                .body("[0].customerNumber", equalTo("1718"))
+                .statusCode(200)
+                .body("$.", hasSize(1))
+                .body("[0].email", equalTo(emailUser))
                 .body("[0].label", equalTo("LearnId"))
-                .body("[0].accountSetId", equalTo(null));
+                .body("$", not(hasKey("postalCode")))
+                .extract().jsonPath().getString("[0].id");
+
+        given()
+                .log().everything()
+                .queryParam("userId", userId)
+                .when()
+                .get("/userclaims")
+                .then()
+                .log().body()
+                .assertThat()
+                .statusCode(200)
+                .body("$.", hasSize(0));
 
     }
 
     @Test
     public void newUserEmail() {
-        String email = "aap@mailinator.com";
+        String emailUser = "";
+        String emailCust = "";
+        String postalCode = "";
+        String custNumber = "";
 
         try {
-            extShipment.remove("emailUser");
-            extShipment.put("emailUser", email);
+            emailUser = extShipment.get("emailUser").toString();
+            emailCust = extShipment.get("emailAddress").toString();
+            postalCode = extShipment.get("postalCode").toString();
+            custNumber = extShipment.get("customerNumber").toString();
         } catch (JSONException e) {
             //some exception handler code.
         }
 
+        //Send shipment to VDEK
         given()
                 .log().everything()
                 .contentType("application/json")
@@ -1167,28 +1399,59 @@ public class VdekMockTests {
                 .body("processedByTask", equalTo(true))
                 .log().body();
 
-        given()
+        //Check the customer first
+        String userId = given()
                 .log().all()
-                .queryParam("email", email)
+                .queryParam("email", emailCust)
                 .when()
                 .get("/users")
                 .then()
                 .log().body()
                 .statusCode(200)
-                .body("$.", hasSize(1));
+                .body("$.", hasSize(1))
+                .body("[0].email", equalTo(emailCust))
+                .body("[0].label", equalTo("LearnId"))
+                .body("[0].postalCode", equalTo(postalCode))
+                .extract().jsonPath().getString("[0].id");
 
         given()
+                .log().everything()
+                .queryParam("userId", userId)
+                .when()
+                .get("/userclaims")
+                .then()
+                .log().body()
+                .assertThat()
+                .statusCode(200)
+                .body("$.", hasSize(1))
+                .body("[0].claimType", equalToIgnoringCase("CustomerNumber"))
+                .body("[0].claimValue", equalTo(custNumber));
+
+        //Now check the user
+        userId = given()
                 .log().all()
-                .queryParam("email", email)
+                .queryParam("email", emailUser)
                 .when()
                 .get("/users")
                 .then()
-                .statusCode(200)
                 .log().body()
-                .body("[0].email", equalTo(email))
-                .body("[0].customerNumber", equalTo(null))
+                .statusCode(200)
+                .body("$.", hasSize(1))
+                .body("[0].email", equalTo(emailUser))
                 .body("[0].label", equalTo("LearnId"))
-                .body("[0].accountSetId", equalTo(null));
+                .body("$", not(hasKey("postalCode")))
+                .extract().jsonPath().getString("[0].id");
+
+        given()
+                .log().everything()
+                .queryParam("userId", userId)
+                .when()
+                .get("/userclaims")
+                .then()
+                .log().body()
+                .assertThat()
+                .statusCode(200)
+                .body("$.", hasSize(0));
     }
 
 }

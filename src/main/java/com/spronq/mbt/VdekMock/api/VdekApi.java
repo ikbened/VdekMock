@@ -198,9 +198,6 @@ public class VdekApi {
 
 
     private String resolveUser(ExtendedShipment shipment) {
-        String email = "";
-        User user;
-
         if (!shipment.getAdministration().equalsIgnoreCase("Dynamics")) {
             return  "Unknown administration";
         }
@@ -216,9 +213,9 @@ public class VdekApi {
         }
 
         if ( !IsLearnIdAccountWithEmailPresent(shipment.getEmailUser()) ) {
-            user = new User();
+            User user = new User();
             user.setLabel("LearnId");
-            user.setEmail(email);
+            user.setEmail(shipment.getEmailUser());
             userRepository.save(user).block();
         } else {
             //Do nothing
