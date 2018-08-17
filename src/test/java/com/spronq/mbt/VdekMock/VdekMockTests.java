@@ -408,17 +408,21 @@ public class VdekMockTests {
     public void customerWithEmailWithOneEmailOccurrences() {
         String custNumber = "";
         String custEmail = "";
+        String postalCode = "";
 
         try {
             custNumber = extShipment.get("customerNumber").toString();
             custEmail = extShipment.get("emailAddress").toString();
+            postalCode = extShipment.get("postalCode").toString();
         } catch (JSONException e) {
             //some exception handler code.
         }
 
+        //Create the customer
         User u = new User();
         u.setEmail(custEmail);
         u.setLabel("LearnId");
+        u.setPostalCode("1111AA");
 
         given()
                 .log().everything()
@@ -429,6 +433,7 @@ public class VdekMockTests {
                 .then()
                 .statusCode(202);
 
+        //Send shipment to VDEK
         given()
                 .log().everything()
                 .contentType("application/json")
@@ -442,6 +447,7 @@ public class VdekMockTests {
                 .body("processedByTask", equalTo(true))
                 .log().body();
 
+        //Check the customer, postalcode must be updated and has CustomerNumber userClaim.
         given()
                 .log().all()
                 .queryParam("email", custEmail)
@@ -452,7 +458,8 @@ public class VdekMockTests {
                 .log().body()
                 .body("$.", hasSize(1))
                 .body("[0].email", equalTo(custEmail))
-                .body("[0].label", equalTo("LearnId"));
+                .body("[0].label", equalTo("LearnId"))
+                .body("[0].postalCode", equalTo(postalCode));
 
         given()
                 .log().everything()
