@@ -1,0 +1,19 @@
+box: maven:latest
+
+build-docker-test:
+  box:
+    id: maven:latest
+    username: $DOCKER_HUB_USERNAME
+    password: $DOCKER_HUB_PASSWORD
+  steps:
+    - internal/docker-push:
+        registry: $DOCKER_HUB_REGISTRY
+        author: edhi
+        tag: $DOCKER_HUB_TAG
+        username: $DOCKER_HUB_USERNAME
+        password: $DOCKER_HUB_PASSWORD
+        repository: $DOCKER_HUB_REPO
+        ports: $DOCKER_PORT
+        user: root
+        working-dir: /pipeline/source
+        entrypoint: "mvn spring-boot:run"
