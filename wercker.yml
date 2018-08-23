@@ -11,7 +11,7 @@ build:
 build-docker-image:
   steps:
     - script:
-        name: info and set parameters
+        name: info and set parameter
         code: |
           echo $WERCKER_SOURCE_DIR
     - script:
@@ -25,4 +25,4 @@ build-docker-image:
         repository: $DOCKER_HUB_REPO
         registry: $DOCKER_REGISTRY
         ports: $DOCKER_PORT
-        entrypoint: java -jar stagportal.jar
+        entrypoint: java -jar vdekmock.jar
