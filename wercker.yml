@@ -8,6 +8,7 @@ build:
           cd /pipeline/source
           mvn package
 
+
 build-docker-image:
   steps:
     - script:
