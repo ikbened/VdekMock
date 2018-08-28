@@ -22,4 +22,4 @@ build-docker-image:
         repository: $DOCKER_HUB_REPO
         registry: $DOCKER_REGISTRY
         ports: $DOCKER_PORT
-        cmd: java -jar vdekmock.jar
+        entrypoint: java -jar vdekmock.jar
