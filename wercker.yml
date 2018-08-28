@@ -21,6 +21,5 @@ build-docker-image:
         password: $DOCKER_HUB_PASSWORD
         repository: $DOCKER_HUB_REPO
         registry: $DOCKER_REGISTRY
-        tag: $DOCKER_HUB_TAG, $WERCKER_GIT_COMMIT
         ports: $DOCKER_PORT
-        entrypoint: java -jar vdekmock.jar
+        cmd: java -jar vdekmock.jar
