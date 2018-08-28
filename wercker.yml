@@ -14,6 +14,9 @@ build-docker-image:
     - script:
           name: remove pipeline/source leave wercker.yml
           code: |
+            echo "Copy jar file"
+            mkdir -p /opt/bin
+            cp $WERCKER_SOURCE_DIR/target/vdekmock.jar /opt/bin
             echo "Removing source directory" $WERCKER_SOURCE_DIR
             cd  $WERCKER_SOURCE_DIR; ls | grep -v wercker.yml | xargs rm -rf
     - internal/docker-push:
@@ -22,4 +25,4 @@ build-docker-image:
         repository: $DOCKER_HUB_REPO
         registry: $DOCKER_REGISTRY
         ports: $DOCKER_PORT
-        entrypoint: java -jar vdekmock.jar
+        entrypoint: java -jar /opt/bin/vdekmock.jar
