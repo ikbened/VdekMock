@@ -1,0 +1,68 @@
+https://github.com/TorXakis/TorXakis/releases
+
+
+
+GetUser_Resp(User("5bb50b219a246a11474a2803",learnId,aap@aap.nl,1234AB),User("5bb50b3b9a246a11474a2804",learnId,aap@aap.nl,4321BA))
+
+
+GetUser_Resp(Usr(User("5bb50b219a246a11474a2803",learnId,aap@aap.nl,1234AB), Usr(User("5bb50b219a246a11474a2803",learnId,aap@aap.nl,4321BA), Nil)))
+
+
+
+
+
+
+
+
+BigMac2:bin edh$ . torxakis VD2.txs
+
+TXS >>  TorXakis :: Model-Based Testing
+
+TXS >>  txsserver starting: "localhost" : 9876
+TXS >>  Solver initialized : Z3 [4.5.1 - build hashcode 7c63a5cc1ddf]
+TXS >>  TxsCore initialized
+TXS >>  input files parsed:
+TXS >>  VD2.txs
+TXS <<  tester VD Sut
+TXS >>  Tester started
+TXS <<  test 1
+TXS >>  .....1: IN: Act { { ( In, [ PostUser_Req(JanF,LearnId,1000) ] ) } }
+TXS >>  PASS
+TXS <<  q
+TXS >>  txsserver closing "localhost" : 9876
+
+TXS >>  TorXakis :: Model-Based Testing  << End
+
+BigMac2:bin edh$ . torxakis VD2.txs
+
+TXS >>  TorXakis :: Model-Based Testing
+
+TXS >>  txsserver starting: "localhost" : 9875
+TXS >>  Solver initialized : Z3 [4.5.1 - build hashcode 7c63a5cc1ddf]
+TXS >>  TxsCore initialized
+TXS >>  input files parsed:
+TXS >>  VD2.txs
+TXS <<  tester VD Sut
+TXS >>  Tester started
+TXS <<  test 1
+TXS >>  .....1: IN: Act { { ( In, [ PostUser_Req(JanF,STS,1000) ] ) } }
+TXS >>  PASS
+TXS <<  test 1
+TXS >>  .....1: OUT: Act { { ( Out, [ PostUser_Resp(User("5bb508f99a246a0f3204fa7c",STS,JanF,1000)) ] ) } }
+TXS >>  PASS
+TXS <<  test 2
+TXS >>  .....1: IN: Act { { ( In, [ PostUser_Req(JanT,STS,1000) ] ) } }
+TXS >>  .....2: OUT: Act { { ( Out, [ PostUser_Resp(User("5bb5090b9a246a0f3204fa7d",STS,JanT,1000)) ] ) } }
+TXS >>  PASS
+TXS <<  test 10
+TXS >>  .....1: IN: Act { { ( In, [ PostUser_Req(JanF,LearnId,1000) ] ) } }
+TXS >>  .....2: OUT: Act { { ( Out, [ PostUser_Resp(User("5bb509109a246a0f3204fa7e",LearnId,JanF,1000)) ] ) } }
+TXS >>  .....3: IN: Act { { ( In, [ PostUser_Req(JanF,VDE,1000) ] ) } }
+TXS >>  .....4: OUT: Act { { ( Out, [ PostUser_Resp(User("5bb509109a246a0f3204fa7f",VDE,JanF,1000)) ] ) } }
+TXS >>  .....5: IN: Act { { ( In, [ PostUser_Req(Ed,VDE,1000) ] ) } }
+TXS >>  .....6: OUT: Act { { ( Out, [ PostUser_Resp(User("5bb509109a246a0f3204fa80",VDE,Ed,1000)) ] ) } }
+TXS >>  .....7: IN: Act { { ( In, [ PostUser_Req(JanF,VDE,1000) ] ) } }
+TXS >>  .....8: OUT: Act { { ( Out, [ PostUser_Resp(User("5bb509109a246a0f3204fa81",VDE,JanF,1000)) ] ) } }
+TXS >>  .....9: IN: Act { { ( In, [ PostUser_Req(Ed,STS,1000) ] ) } }
+TXS >>  ....10: OUT: Act { { ( Out, [ PostUser_Resp(User("5bb509109a246a0f3204fa82",STS,Ed,1000)) ] ) } }
+TXS >>  PASS
