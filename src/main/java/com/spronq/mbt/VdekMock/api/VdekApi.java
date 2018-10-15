@@ -219,6 +219,7 @@ public class VdekApi {
             userRepository.save(user).block();
         } else {
             //Do nothing
+            
         }
 
         return "";
