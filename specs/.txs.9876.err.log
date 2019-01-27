@@ -1,0 +1,12 @@
+
+TXSSERVER >>  Starting  ..... 
+
+TXSSERVER CMD >>  START
+TXSSERVER RSP <<  MACK txsserver starting:  "localhost" : 9876
+TXSSERVER RSP <<  PACK START
+TXSSERVER CMD >>  INIT VD.txs
+TXSSERVER RSP <<  MACK Solver initialized : Z3 [4.5.1 - build hashcode 7c63a5cc1ddf]
+TXSSERVER RSP <<  MACK TxsCore initialized
+TXSSERVER RSP <<  MACK input files parsed:
+TXSSERVER RSP <<  MACK VD.txs
+TXSSERVER RSP <<  PACK INIT
