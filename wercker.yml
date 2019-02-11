@@ -11,7 +11,7 @@ build:
 
 build-docker-image:
   box:
-    id: openjdk:8-jre-alpine
+    id: openjdk:8-alpine
   steps:
     - script:
           name: remove pipeline/source leave wercker.yml
