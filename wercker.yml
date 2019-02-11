@@ -1,6 +1,6 @@
-box: maven:3.5-jdk-8
-
 build:
+  box:
+    id: maven:3.5-jdk-8
   steps:
     - script:
         name: get code / compile / stage for docker.
@@ -10,6 +10,8 @@ build:
 
 
 build-docker-image:
+  box:
+    id: openjdk:8-alpine
   steps:
     - script:
           name: remove pipeline/source leave wercker.yml
