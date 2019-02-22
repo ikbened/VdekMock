@@ -69,7 +69,7 @@ public class VdekApi {
         String custNumber = shipment.getCustomerNumber();
 
         if ( !IsCustomerNumberUnique(custNumber) ) {
-            return "CustomerNumber is not unique. ";
+            return "CustomerNumber is not unique.";
         }
 
         if (StringUtils.isEmpty(shipment.getEmailAddress())) {
