@@ -32,6 +32,7 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-mongodb-reactive</artifactId>
 		</dependency>
+
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-webflux</artifactId>
@@ -51,7 +52,7 @@
 		<dependency>
 			<groupId>de.flapdoodle.embed</groupId>
 			<artifactId>de.flapdoodle.embed.mongo</artifactId>
-            <!--<scope>test</scope>-->
+            <scope>test</scope>
 		</dependency>
 
 		<dependency>
@@ -65,16 +66,19 @@
             <artifactId>logstash-logback-encoder</artifactId>
             <version>4.7</version>
         </dependency>
+
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
             <version>1.7.18</version>
         </dependency>
+
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-core</artifactId>
             <version>${ch.qos.logback.version}</version>
         </dependency>
+
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
@@ -85,6 +89,7 @@
             -->
             <optional>true</optional>
         </dependency>
+
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-access</artifactId>
@@ -95,37 +100,6 @@
             -->
             <optional>true</optional>
         </dependency>
-
-		<!--&lt;!&ndash; https://mvnrepository.com/artifact/log4j/log4j &ndash;&gt;-->
-		<!--<dependency>-->
-			<!--<groupId>log4j</groupId>-->
-			<!--<artifactId>log4j</artifactId>-->
-			<!--<version>1.2.17</version>-->
-		<!--</dependency>-->
-
-		<!--&lt;!&ndash; https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-api &ndash;&gt;-->
-		<!--<dependency>-->
-			<!--<groupId>org.apache.logging.log4j</groupId>-->
-			<!--<artifactId>log4j-api</artifactId>-->
-			<!--<version>2.11.2</version>-->
-		<!--</dependency>-->
-
-		<!--&lt;!&ndash; https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-core &ndash;&gt;-->
-		<!--<dependency>-->
-			<!--<groupId>org.apache.logging.log4j</groupId>-->
-			<!--<artifactId>log4j-core</artifactId>-->
-			<!--<version>2.11.2</version>-->
-		<!--</dependency>-->
-
-		<!-- Swagger/Springfox deps -->
-        <!--
-
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-web</artifactId>
-            <version>1.5.10.RELEASE</version>
-        </dependency>
-		-->
 
 		<dependency>
 			<groupId>io.springfox</groupId>
@@ -140,14 +114,6 @@
 			<version>${springfox.version}</version>
             <scope>compile</scope>
 		</dependency>
-
-		<!--
-		<dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-webmvc</artifactId>
-            <version>4.3.13.RELEASE</version>
-        </dependency>
-		-->
 
         <!-- Project Lombok for easier data classes -->
         <dependency>
