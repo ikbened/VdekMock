@@ -7,6 +7,7 @@ import com.spronq.mbt.VdekMock.repository.ExtendedShipmentRepository;
 import com.spronq.mbt.VdekMock.repository.UserClaimsRepository;
 import com.spronq.mbt.VdekMock.repository.UsersRepository;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -14,13 +15,20 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-
+import static org.slf4j.LoggerFactory.getLogger;
 import javax.validation.Valid;
 import java.util.ArrayList;
 
 @RestController
 @RequestMapping(value = "/shipments", produces = MediaType.APPLICATION_JSON_VALUE)
 public class VdekApi {
+
+    //private static final Logger LOG = LogManager.getLogger(VdekApi.class);
+    private static final Logger LOG = getLogger(VdekApi.class);
+//    static final Logger logger = Logger.getLogger(VdekApi.class.getName());
+//
+//    private static Logger AUDITLOGGER = Logger.getLogger("auditLogger");
+//    private static Logger APPLOGGER = Logger.getLogger("appLogger");
 
     private ExtendedShipmentRepository repository;
     private UsersRepository userRepository;
@@ -68,6 +76,11 @@ public class VdekApi {
         User cust;
         String custNumber = shipment.getCustomerNumber();
 
+        LOG.debug("This Will Be Printed On Debug");
+        LOG.info("This Will Be Printed On Info");
+        LOG.warn("This Will Be Printed On Warn");
+        LOG.error("This Will Be Printed On Error");
+        //LOG.fatal("This Will Be Printed On Fatal");
         if ( !IsCustomerNumberUnique(custNumber) ) {
             return "CustomerNumber is not unique. ";
         }
@@ -77,8 +90,10 @@ public class VdekApi {
         } else {
             email = shipment.getEmailAddress();
         }
+        //logger.debug("email: " + email);
 
         if ( !IsEmailUniqueForLearnIdAccounts(email) ) {
+            //logger.debug("Customer email is not unique within LearnId...");
             return "Customer email is not unique within LearnId";
         }
 
@@ -87,8 +102,10 @@ public class VdekApi {
 
         if ( IsLearnIdAccountWithEmailPresent(email) ) {
             // This assumes there's only one customer found for this email
+            //logger.debug("Customer found");
             cust = userRepository.findAllByEmail(email).blockFirst();
         } else {
+            //logger.debug("Creating a new customer");
             cust = new User();
             cust.setEmail(email);
             cust.setLabel("LearnId");
@@ -96,10 +113,13 @@ public class VdekApi {
         }
 
         if (! IsCustomerNumberInAccountSet(custNumber, cust.getId())){
+            //logger.debug("CustomerNumber not found in AccountSet");
             User user = GetUserWithCustomerNumber(shipment.getCustomerNumber());
             if(user != null){
+                //logger.debug("Linking users");
                 LinkUsers(user, cust);
             } else {
+                //logger.debug("Adding new userclaim");
                 AddUserClaimToUser(cust, "CustomerNumber", custNumber);
             }
         }

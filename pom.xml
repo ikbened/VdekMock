@@ -24,6 +24,7 @@
 		<java.version>1.8</java.version>
 		<springfox.version>2.8.0</springfox.version>
 		<surefire.extra.args>-Djdk.net.URLClassPath.disableClassPathURLCheck=true</surefire.extra.args>
+        <ch.qos.logback.version>1.1.6</ch.qos.logback.version>
 	</properties>
 
 	<dependencies>
@@ -50,7 +51,7 @@
 		<dependency>
 			<groupId>de.flapdoodle.embed</groupId>
 			<artifactId>de.flapdoodle.embed.mongo</artifactId>
-            <scope>test</scope>
+            <!--<scope>test</scope>-->
 		</dependency>
 
 		<dependency>
@@ -58,6 +59,63 @@
 			<artifactId>reactor-test</artifactId>
 			<scope>test</scope>
 		</dependency>
+
+        <dependency>
+            <groupId>net.logstash.logback</groupId>
+            <artifactId>logstash-logback-encoder</artifactId>
+            <version>4.7</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.7.18</version>
+        </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-core</artifactId>
+            <version>${ch.qos.logback.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>${ch.qos.logback.version}</version>
+            <!--
+               Required for logging regular ILoggingEvents with a Logger.
+               Not needed if only logging IAccessEvents for access logs.
+            -->
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-access</artifactId>
+            <version>${ch.qos.logback.version}</version>
+            <!--
+               Required for logging IAccessEvents for access logs.
+               Not needed if only logging regular ILoggingEvents with a Logger.
+            -->
+            <optional>true</optional>
+        </dependency>
+
+		<!--&lt;!&ndash; https://mvnrepository.com/artifact/log4j/log4j &ndash;&gt;-->
+		<!--<dependency>-->
+			<!--<groupId>log4j</groupId>-->
+			<!--<artifactId>log4j</artifactId>-->
+			<!--<version>1.2.17</version>-->
+		<!--</dependency>-->
+
+		<!--&lt;!&ndash; https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-api &ndash;&gt;-->
+		<!--<dependency>-->
+			<!--<groupId>org.apache.logging.log4j</groupId>-->
+			<!--<artifactId>log4j-api</artifactId>-->
+			<!--<version>2.11.2</version>-->
+		<!--</dependency>-->
+
+		<!--&lt;!&ndash; https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-core &ndash;&gt;-->
+		<!--<dependency>-->
+			<!--<groupId>org.apache.logging.log4j</groupId>-->
+			<!--<artifactId>log4j-core</artifactId>-->
+			<!--<version>2.11.2</version>-->
+		<!--</dependency>-->
 
 		<!-- Swagger/Springfox deps -->
         <!--
