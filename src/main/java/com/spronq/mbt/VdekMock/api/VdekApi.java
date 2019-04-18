@@ -23,13 +23,7 @@ import java.util.ArrayList;
 @RequestMapping(value = "/shipments", produces = MediaType.APPLICATION_JSON_VALUE)
 public class VdekApi {
 
-    //private static final Logger LOG = LogManager.getLogger(VdekApi.class);
     private static final Logger LOG = getLogger(VdekApi.class);
-//    static final Logger logger = Logger.getLogger(VdekApi.class.getName());
-//
-//    private static Logger AUDITLOGGER = Logger.getLogger("auditLogger");
-//    private static Logger APPLOGGER = Logger.getLogger("appLogger");
-
     private ExtendedShipmentRepository repository;
     private UsersRepository userRepository;
     private UserClaimsRepository userClaimsRepository;
@@ -76,10 +70,11 @@ public class VdekApi {
         User cust;
         String custNumber = shipment.getCustomerNumber();
 
-        LOG.debug("This Will Be Printed On Debug");
-        LOG.info("This Will Be Printed On Info");
-        LOG.warn("This Will Be Printed On Warn");
-        LOG.error("This Will Be Printed On Error");
+        LOG.debug("resolveCustomer");
+//        LOG.debug("This Will Be Printed On Debug");
+//        LOG.info("This Will Be Printed On Info");
+//        LOG.warn("This Will Be Printed On Warn");
+//        LOG.error("This Will Be Printed On Error");
         //LOG.fatal("This Will Be Printed On Fatal");
         if ( !IsCustomerNumberUnique(custNumber) ) {
             return "CustomerNumber is not unique. ";
@@ -90,10 +85,10 @@ public class VdekApi {
         } else {
             email = shipment.getEmailAddress();
         }
-        //logger.debug("email: " + email);
+        LOG.debug("email: " + email);
 
         if ( !IsEmailUniqueForLearnIdAccounts(email) ) {
-            //logger.debug("Customer email is not unique within LearnId...");
+            LOG.debug("Customer email is not unique within LearnId...");
             return "Customer email is not unique within LearnId";
         }
 
@@ -102,10 +97,10 @@ public class VdekApi {
 
         if ( IsLearnIdAccountWithEmailPresent(email) ) {
             // This assumes there's only one customer found for this email
-            //logger.debug("Customer found");
+            LOG.debug("Customer found");
             cust = userRepository.findAllByEmail(email).blockFirst();
         } else {
-            //logger.debug("Creating a new customer");
+            LOG.debug("Creating a new customer");
             cust = new User();
             cust.setEmail(email);
             cust.setLabel("LearnId");
@@ -113,13 +108,13 @@ public class VdekApi {
         }
 
         if (! IsCustomerNumberInAccountSet(custNumber, cust.getId())){
-            //logger.debug("CustomerNumber not found in AccountSet");
+            LOG.debug("CustomerNumber not found in AccountSet");
             User user = GetUserWithCustomerNumber(shipment.getCustomerNumber());
             if(user != null){
-                //logger.debug("Linking users");
+                LOG.debug("Linking users");
                 LinkUsers(user, cust);
             } else {
-                //logger.debug("Adding new userclaim");
+                LOG.debug("Adding new userclaim");
                 AddUserClaimToUser(cust, "CustomerNumber", custNumber);
             }
         }
@@ -218,28 +213,34 @@ public class VdekApi {
 
 
     private String resolveUser(ExtendedShipment shipment) {
+        LOG.debug("resolveCustomer");
         if (!shipment.getAdministration().equalsIgnoreCase("Dynamics")) {
+            LOG.debug("Administration <> Dynamics");
             return  "Unknown administration";
         }
 
         if (StringUtils.isEmpty(shipment.getEmailUser())) {
+            LOG.debug("User has no email");
             shipment.setEmailUser(shipment.getEmailAddress());
             repository.save(shipment).block();
             return "";
         }
 
         if ( !IsEmailUniqueForLearnIdAccounts(shipment.getEmailUser()) ) {
-                return "User email is not unique within LearnId";
+            LOG.debug("User email is not unique");
+            return "User email is not unique within LearnId";
         }
 
+        LOG.debug("user has email " + shipment.getEmailUser());
         if ( !IsLearnIdAccountWithEmailPresent(shipment.getEmailUser()) ) {
+            LOG.debug("Creating account for user");
             User user = new User();
             user.setLabel("LearnId");
             user.setEmail(shipment.getEmailUser());
             userRepository.save(user).block();
         } else {
             //Do nothing
-
+            LOG.debug("user found");
         }
 
         return "";
