@@ -17,3 +17,5 @@ public class VdekMockApplication {
 		application.run(args);
 	}
 }
+
+
