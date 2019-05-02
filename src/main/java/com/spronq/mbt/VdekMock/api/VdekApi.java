@@ -47,6 +47,7 @@ public class VdekApi {
                 .defaultIfEmpty(ResponseEntity.notFound().build());
     }
 
+    
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(value = HttpStatus.ACCEPTED)
     public Mono<ExtendedShipment> createShipments(@Valid @RequestBody ExtendedShipment shipment) {
